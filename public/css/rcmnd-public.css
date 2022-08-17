@@ -1,0 +1,51 @@
+/**
+ * All of the CSS for your public-facing functionality should be
+ * included in this file.
+ */
+ 
+ 
+/* .rcmndref-tag-parent-cart {
+    float: right;
+width: 35%;
+font-size: 12px;
+padding: 5px;
+border: solid 2px #1e134a;
+color: #1e134a;
+box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+border-radius: 9px;
+font-weight: bold;
+cursor:pointer;
+}*/
+
+
+.rcmndref-tag-parent-cart, .rcmndref-payment-success {
+  width: 100%;
+  font-size: 14px;
+  padding: 5px;
+  color: #1e134a;
+  margin-top: 1%;
+  padding-bottom: 3%;
+}
+
+.rcmndref-payment-success {
+  width: 100%;
+  font-size: 14px;
+  padding: 5px;
+  color: #1e134a;
+  margin-top: 1%;
+  padding-bottom: 3%;
+}
+
+
+
+.rcmndref-tag{
+    height: 100% !important;
+max-width: 25px !important;
+width: 100% !important;
+}
+
+
+ .rcmnd-inputfields{
+     width:100%;
+     max-width: 400px;
+ }
