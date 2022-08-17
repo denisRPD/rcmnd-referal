@@ -1,0 +1,15 @@
+
+/data
+.gitignore
+.git
+.idea
+.code
+
+LICENSE.md
+node_modules
+.shopify-cli.yml
+
+.env
+.env.test
+.env.example
+dist
