@@ -1,10 +1,13 @@
 <?php
 
+// Starting session
+session_start();
+
 /**
  * The public-facing functionality of the plugin.
  *
- * @link       https://recommnd.io
- * @since      1.0.0
+ * @link       https://recommend.co
+ * @since      1.1
  *
  * @package    Rcmnd_referral
  * @subpackage Rcmnd_referral/public
@@ -18,14 +21,14 @@
  *
  * @package    Rcmnd_referral
  * @subpackage Rcmnd_referral/public
- * @author     Recommend Inc. <info@rcmnd.co>
+ * @author     Recommend Inc. <admin@recommend.co>
  */
 class Rcmnd_referral_Public {
 
 	/**
 	 * The ID of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    1.1
 	 * @access   private
 	 * @var      string    $plugin_name    The ID of this plugin.
 	 */
@@ -34,7 +37,7 @@ class Rcmnd_referral_Public {
 	/**
 	 * The version of this plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    1.1
 	 * @access   private
 	 * @var      string    $version    The current version of this plugin.
 	 */
@@ -43,7 +46,7 @@ class Rcmnd_referral_Public {
 	/**
 	 * Initialize the class and set its properties.
 	 *
-	 * @since    1.0.0
+	 * @since    1.1
 	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
@@ -54,25 +57,12 @@ class Rcmnd_referral_Public {
 	}
 	
 
-
 	/**
 	 * Register the stylesheets for the public-facing side of the site.
 	 *
-	 * @since    1.0.0
+	 * @since    1.1
 	 */
 	public function enqueue_styles() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Af_Densel_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Af_Densel_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/rcmnd-public.css', array(), $this->version, 'all' );
 
@@ -81,24 +71,277 @@ class Rcmnd_referral_Public {
 	/**
 	 * Register the JavaScript for the public-facing side of the site.
 	 *
-	 * @since    1.0.0
+	 * @since    1.1
 	 */
 	public function enqueue_scripts() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Af_Densel_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Af_Densel_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/rcmnd-public.js', array( 'jquery' ), $this->version, false );
 
 	}
+	
+	
+	/**
+	 * Set add to cart button tags
+	 *
+	 * @since    1.1
+	 */
+	public function rcmnd_addedtocart($cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data){
+        $this->rcmnd_set_cart_tags($cart_item_key, $product_id);
+    }
+	
+	/**
+	 * Check referral conversion via API, TEST MODE
+	 *
+	 * @since    1.1
+	 */
+	public function rcmnd_check_referral_test( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ){
+		
+		if( isset ($_SESSION["rcmnd_cookie"])){
+			$cookieValue = filter_var($_SESSION["rcmnd_cookie"], FILTER_SANITIZE_STRING);
+		}
+
+		$gso_options = get_option( 'rcmnd_gso' );
+		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? $gso_options['rcmnd_pkey'] : '';	
+
+		$body = array(
+			'apiToken' => $pkey,
+			'code' => $cookieValue
+		);
+		
+		$responseCode = $this->rcmnd_api_call($body);
+		
+		if ($responseCode === 200) 
+		{
+		    $this->rcmnd_set_cart_tags($cart_item_key, $product_id);
+			unset($_SESSION["rcmnd_cookie"]);
+	    }
+
+	}
+	
+	/**
+	 * Check referral conversion via API, PRODUCTION MODE
+	 *
+	 * @since    1.1
+	 */
+	public function rcmnd_check_referral_prod( $order_id ){
+        if ( ! $order_id ){
+            return;
+        }
+         // Getting an instance of the order object
+        $order = wc_get_order( $order_id );
+
+        if($order->is_paid())
+        {
+            $order_key = $order->get_order_number(); // The Order key
+            $data  = $order->get_data(); // The Order data
+            			
+			if( isset ($data['billing']['email'])){
+				$billing_email = $data['billing']['email'];
+			}
+			
+			if( isset ($data['billing']['phone'])){
+				$billing_phone = $data['billing']['phone'];
+			}
+			
+			if( isset ($_SESSION["rcmnd_cookie"])){
+				$cookieValue = filter_var($_SESSION["rcmnd_cookie"], FILTER_SANITIZE_STRING);
+			}
+
+
+			$gso_options = get_option( 'rcmnd_gso' );
+			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? $gso_options['rcmnd_pkey'] : '';					
+			
+			$body = array(
+				'apiToken' => $pkey,
+				'code' => $cookieValue,
+				'email' => (is_email( $billing_email ) ? $billing_email : ''),
+				'phone' => $billing_phone
+			);
+			
+			$responseCode = $this->rcmnd_api_call($body);
+			
+			$aso_options = get_option( 'rcmnd_aso' );
+			$opt1 = ( isset($aso_options['rcmnd_opt1'] ) ) ? $aso_options['rcmnd_opt1'] : '';
+			
+			$message = $responseCode;
+			
+			if ($responseCode === 200) 
+			{
+				$message = '
+					<div class="rcmndref-payment-success">
+						<div class="rcmndref-payment-success-image" style="float:left;width:5%;">
+							<a target="_blank" href="https://recommend.co">
+								<img class="rcmndref-tag" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'">
+
+							</a>
+						</div>
+						<div class="rcmndref-payment-success-notice" style="float:left;width:85%;margin-left: 2%;margin-top: 1%;">
+							<p style="float:left;" class="rcmndref-addtocart-notice"> ' . esc_html($opt1) .'
+								|  <a target="_blank" href="https://recommend.co"> Recommend</a>
+							</p>
+						</div>
+					</div>';
+			}
+			
+			unset($_SESSION["rcmnd_cookie"]);
+
+			echo $message;
+        }
+    }
+	
+	
+	/**
+	 * Update Woo cart item name with Recommend Logo if referral code recognized
+	 *
+	 * @since    1.1
+	 */
+	public function filter_woocommerce_cart_item_name( $item_name,  $cart_item,  $cart_item_key ) {
+        
+        $default = $item_name;
+        
+        $data = (array)WC()->session->get( '_ld_woo_product_data' );
+    	if ( empty( $data[$cart_item_key] ) ) {
+    		$data[$cart_item_key] = array();
+    	}
+    
+    	return empty( $data[$cart_item_key]["citem-name"] ) ? $default :  $data[$cart_item_key]["citem-name"];
+    }
+	
+	/**
+	 * Update Woo AddToCart button with Recommend Logo if referral code recognized
+	 *
+	 * @since    1.1
+	 */
+	public function rcmnd_after_add_to_cart_notice(){
+		if( isset ($_SESSION["rcmnd_cookie"])){
+			$cookieValue = filter_var($_SESSION["rcmnd_cookie"], FILTER_SANITIZE_STRING);
+		}
+
+		$aso_options = get_option( 'rcmnd_aso' );
+		$opt2 = ( isset($aso_options['rcmnd_opt2'] ) ) ? $aso_options['rcmnd_opt2'] : '';
+
+		if($cookieValue != '' && $opt2 != '')
+		{   
+			echo '
+			<div class="rcmndref-tag-parent-cart" title="' . esc_html($cookieValue) . '">
+				<div style="float:left;width:10%;">
+					<a target="_blank" href="https://recommend.co">
+						<img style="margin: 1.4em 0;max-width:35px;width:100%;" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'">
+					</a>
+				</div>
+				<div style="float:left;width:80%;">
+					<p style="float:left;margin: 1.8em 0;" class="rcmndref-addtocart-notice">' . esc_html($opt2) . '</span>
+				</div>
+			</div>';
+        }
+	}
+	
+	
+	// Helper functions
+	
+	/**
+	 * Update Cart tags function
+	 *
+	 * @since    1.1
+	 */
+	private function rcmnd_set_cart_tags($cart_item_key, $product_id){
+		
+		foreach( WC()->cart->get_cart() as $cart_item ) 
+		   {
+			  $product_in_cart = $cart_item['product_id'];
+			  if ( $product_in_cart === $product_id )
+			  {
+				  $data = (array)WC()->session->get( '_ld_woo_product_data' );
+					if ( empty( $data[$cart_item_key] ) ) {
+						$data[$cart_item_key] = array();
+					}
+					$item_cart_name = $cart_item['data']->get_name();
+					
+					$data[$cart_item_key]["citem-name"] = '
+					<div class="rcmndref-tag-parent">
+						<div style="float:left;width:10%;margin-top: 2%;">
+							<a target="_blank" href="https://recommend.co">
+								<img title="' . __( 'This product was recommended to you.', 'rcmnd' ) . '" class="rcmndref-tag" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'"></img>
+							</a>
+						</div>
+						<div style="float:right;width:85%;">
+							<p style="float:left;" class="rcmndref-item-name">' . esc_html($item_cart_name) . '</p>
+						</div>
+					</div>';
+				
+					WC()->session->set( '_ld_woo_product_data', $data );
+			  }
+		   }
+	}
+	
+	/**
+	 * Recommend API POST REQUEST
+	 *
+	 * @since    1.1
+	 */
+	private function rcmnd_api_call($body){
+		
+		$httpCode = 500;
+		$url = "https://api.recommend.co/apikeys";
+		
+		$args = array(
+			'method'      => 'POST',
+			'body'        => wp_json_encode( $body ),
+			'timeout'     => '45',
+			'redirection' => '5',
+			'httpversion' => '1.0',
+			'blocking'    => true,
+			'headers'     => array
+			(
+				'Content-Type' => 'application/json'
+			),
+			'cookies'     => array()
+		);
+		
+		// Execute the POST request
+		$response = wp_remote_post( $url, $args );
+		
+		if ( !is_wp_error( $response )) 
+		{
+			$httpCode = wp_remote_retrieve_response_code( $response );
+		}
+			
+		return $httpCode;
+	}
+	
+	/**
+	 * Set Session variable with Recommend Referral Code
+	 *
+	 * @since    1.1
+	 */
+	public function set_rcmndID_cookie() {
+        
+        $parameterRcmndID = '';
+        
+        if (isset($_GET['RcmndRef'])){
+            $parameterRcmndID = filter_var($_GET['RcmndRef'], FILTER_SANITIZE_STRING);
+        }
+        
+        if (isset($_GET['RcmndREF'])){
+			$parameterRcmndID = filter_var($_GET['RcmndREF'], FILTER_SANITIZE_STRING);        
+        }
+        
+        if (isset($_GET['RCMNDREF'])){
+        	$parameterRcmndID = filter_var($_GET['RCMNDREF'], FILTER_SANITIZE_STRING);        
+        }
+        
+        if (isset($_GET['rcmndRef'])){
+        	$parameterRcmndID = filter_var($_GET['rcmndRef'], FILTER_SANITIZE_STRING);        
+        }
+        
+        if (isset($_GET['rcmndref'])){
+			$parameterRcmndID = filter_var($_GET['rcmndref'], FILTER_SANITIZE_STRING);       
+        }
+
+        if($parameterRcmndID != '')
+        {            
+            $_SESSION["rcmnd_cookie"] = filter_var($parameterRcmndID, FILTER_SANITIZE_STRING);
+        }
+    }
 
 }
