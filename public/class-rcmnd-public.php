@@ -180,7 +180,8 @@ class Rcmnd_referral_Public {
 								|  <a target="_blank" href="https://recommend.co"> Recommend</a>
 							</p>
 						</div>
-					</div>';
+					</div>
+					</br>';
 			}
 			
 			unset($_SESSION["rcmnd_cookie"]);
