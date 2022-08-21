@@ -5,8 +5,8 @@
  *
  * This file is used to markup the public-facing aspects of the plugin.
  *
- * @link       https://recommnd.io
- * @since      1.0.0
+ * @link       https://recommend.co
+ * @since      1.1
  *
  * @package    Rcmnd_referral
  * @subpackage Rcmnd_referral/public/partials

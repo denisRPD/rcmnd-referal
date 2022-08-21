@@ -19,8 +19,8 @@
  * For more information, see the following discussion:
  * https://github.com/tommcfarlin/WordPress-Plugin-Boilerplate/pull/123#issuecomment-28541913
  *
- * @link       https://recommnd.io
- * @since      1.0.0
+ * @link       https://recommend.co
+ * @since      1.1
  *
  * @package    Rcmnd_referral
  */

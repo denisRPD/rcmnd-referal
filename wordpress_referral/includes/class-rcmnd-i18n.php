@@ -6,8 +6,8 @@
  * Loads and defines the internationalization files for this plugin
  * so that it is ready for translation.
  *
- * @link       https://recommnd.io
- * @since      1.0.0
+ * @link       https://recommend.co
+ * @since      1.1
  *
  * @package    Rcmnd_referral
  * @subpackage Rcmnd_referral/includes
@@ -19,10 +19,10 @@
  * Loads and defines the internationalization files for this plugin
  * so that it is ready for translation.
  *
- * @since      1.0.0
+ * @since      1.1
  * @package    Rcmnd_referral
  * @subpackage Rcmnd_referral/includes
- * @author     Recommend Inc. <info@rcmnd.co>
+ * @author     Recommend Inc. <admin@recommend.co>
  */
 class Rcmnd_referral_i18n {
 
@@ -30,7 +30,7 @@ class Rcmnd_referral_i18n {
 	/**
 	 * Load the plugin text domain for translation.
 	 *
-	 * @since    1.0.0
+	 * @since    1.1
 	 */
 	public function load_plugin_textdomain() {
 

@@ -3,31 +3,31 @@
 /**
  * Fired during plugin deactivation
  *
- * @link       https://recommnd.io
- * @since      1.0.0
+ * @link       https://recommend.co
+ * @since      1.1
  *
  * @package    Rcmnd_referral
  * @subpackage Rcmnd_referral/includes
  */
 
 /**
- * Fired during plugin deactivation.
+ * Fired during plugin activation.
  *
  * This class defines all code necessary to run during the plugin's deactivation.
  *
- * @since      1.0.0
+ * @since      1.1
  * @package    Rcmnd_referral
  * @subpackage Rcmnd_referral/includes
- * @author     Recommend Inc. <info@rcmnd.co>
+ * @author     Recommend Inc. <admin@recommend.co>
  */
 class Rcmnd_referral_Deactivator {
 
 	/**
-	 * Short Description. (use period)
+	 * Deactivate Recommend Integration plugin.
 	 *
-	 * Long Description.
+	 * Deactivation function for Recommend Integration plugin.
 	 *
-	 * @since    1.0.0
+	 * @since    1.1
 	 */
 	public static function deactivate() {
 
