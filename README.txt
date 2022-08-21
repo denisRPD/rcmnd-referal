@@ -44,7 +44,7 @@ All the answers are on our site (at least we try): https://about.recommend.co/ap
 
 == Screenshots ==
 
-2. Product page (screenshots/SS1_ProductCard.png)
+1. Product page (screenshots/SS1_ProductCard.png)
 2. Recommend referral in action (screenshots/SS2_ProductCart.png)
 3. Checkout page (screenshots/SS3_ThankYouPage.png)
 4. Options panel (screenshots/SS4_OptionsPanel.png)
