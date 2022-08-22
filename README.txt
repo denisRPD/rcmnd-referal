@@ -1,4 +1,4 @@
-=== Recommend Referral, integration plugin ===
+=== Recommend Referral, Integration Plugin ===
 Contributors: denisrcmnd
 Donate link: https://about.recommend.co
 Tags: recommend, referral, webshop, integration, codes
