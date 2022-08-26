@@ -243,7 +243,7 @@ class Rcmnd_referral_Admin {
 		?>
 			<fieldset>
 				<label>
-					<input class="rcmnd-inputfields" placeholder="Enter your Key..." type="text" name="rcmnd_gso[rcmnd_pkey]" value="<?php echo $pkey; ?>"/>
+					<input class="rcmnd-inputfields" placeholder="Enter your Key..." type="text" name="rcmnd_gso[rcmnd_pkey]" value="<?php echo esc_attr($pkey); ?>"/>
 					<p class="description"><?php esc_html(_e( 'Find your API Key within the Integration module in Recommend.', 'rcmnd' )); ?></p>
 				</label>
 			</fieldset>
@@ -257,7 +257,7 @@ class Rcmnd_referral_Admin {
 		?>
 			<fieldset>
 				<label>
-					<input type="checkbox" name="rcmnd_gso[rcmnd_istest]" <?php echo $checked; ?>>
+					<input type="checkbox" name="rcmnd_gso[rcmnd_istest]" <?php echo esc_attr($checked); ?>>
 					<p class="description"><?php esc_html(_e( 'If you are testing plugin set this checkbox. In testing mode, plugin will send referral check after adding product to cart.', 'rcmnd' )); ?></p>
 				</label>
 			</fieldset>
@@ -270,7 +270,7 @@ class Rcmnd_referral_Admin {
 		?>
 			<fieldset>
 				<label>
-					<input class="rcmnd-inputfields" placeholder="Enter your Opt1..." type="text" name="rcmnd_aso[rcmnd_opt1]" value="<?php echo $opt1; ?>"/>
+					<input class="rcmnd-inputfields" placeholder="Enter your Opt1..." type="text" name="rcmnd_aso[rcmnd_opt1]" value="<?php echo esc_attr($opt1); ?>"/>
 					<p class="description"><?php esc_html(_e( 'This text will be added on thank you page if conversion is fired.', 'rcmnd' )); ?></p>
 				</label>
 			</fieldset>
@@ -283,7 +283,7 @@ class Rcmnd_referral_Admin {
 		?>
 			<fieldset>
 				<label>
-					<input class="rcmnd-inputfields" placeholder="Enter your Opt2..." type="text" name="rcmnd_aso[rcmnd_opt2]" value="<?php echo $opt2; ?>"/>
+					<input class="rcmnd-inputfields" placeholder="Enter your Opt2..." type="text" name="rcmnd_aso[rcmnd_opt2]" value="<?php echo esc_attr($opt2); ?>"/>
 					<p class="description"><?php esc_html(_e( 'This text will be add after add to cart button if referral code is recognized.', 'rcmnd' )); ?></p>
 				</label>
 			</fieldset>
@@ -315,7 +315,7 @@ class Rcmnd_referral_Admin {
 	 */
 	private function rcmnd_check_connection(){
 		$gso_options = get_option( 'rcmnd_gso' );
-		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? $gso_options['rcmnd_pkey'] : '';		
+		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? filter_var($gso_options['rcmnd_pkey'], FILTER_SANITIZE_STRING) : '';	
 		$code = 'test-connection';
 
 		$body = array(
