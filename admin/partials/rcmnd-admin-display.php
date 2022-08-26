@@ -23,7 +23,9 @@
 		</div>
 	</div>
 	<?php
-		$active_tab = isset( $_GET[ "tab"] ) ? $_GET["tab"] : "general";
+		$active_tab_string = isset( $_GET[ "tab"] ) ? $_GET["tab"] : "general";
+		$active_tab = filter_var($active_tab_string, FILTER_SANITIZE_STRING);
+	
 		$active_general= ($active_tab=='general' ? 'nav-tab-active':'');
 		$active_advanced= ($active_tab=='advanced' ? 'nav-tab-active':'');
 	?>
