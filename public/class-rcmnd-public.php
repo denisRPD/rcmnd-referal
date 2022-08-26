@@ -101,7 +101,7 @@ class Rcmnd_referral_Public {
 		}
 
 		$gso_options = get_option( 'rcmnd_gso' );
-		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? $gso_options['rcmnd_pkey'] : '';	
+		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? filter_var($gso_options['rcmnd_pkey'],FILTER_SANITIZE_STRING) : '';	
 
 		$body = array(
 			'apiToken' => $pkey,
@@ -136,11 +136,11 @@ class Rcmnd_referral_Public {
             $data  = $order->get_data(); // The Order data
             			
 			if( isset ($data['billing']['email'])){
-				$billing_email = $data['billing']['email'];
+				$billing_email = filter_val($data['billing']['email'],FILTER_SANITIZE_STRING);
 			}
 			
 			if( isset ($data['billing']['phone'])){
-				$billing_phone = $data['billing']['phone'];
+				$billing_phone = filter_val($data['billing']['phone'],FILTER_SANITIZE_STRING);
 			}
 			
 			if( isset ($_SESSION["rcmnd_cookie"])){
@@ -149,19 +149,19 @@ class Rcmnd_referral_Public {
 
 
 			$gso_options = get_option( 'rcmnd_gso' );
-			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? $gso_options['rcmnd_pkey'] : '';					
+			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? filter_val($gso_options['rcmnd_pkey'],FILTER_SANITIZE_STRING) : '';					
 			
 			$body = array(
 				'apiToken' => $pkey,
 				'code' => $cookieValue,
-				'email' => (is_email( $billing_email ) ? $billing_email : ''),
-				'phone' => $billing_phone
+				'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
+				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT);
 			);
 			
 			$responseCode = $this->rcmnd_api_call($body);
 			
 			$aso_options = get_option( 'rcmnd_aso' );
-			$opt1 = ( isset($aso_options['rcmnd_opt1'] ) ) ? $aso_options['rcmnd_opt1'] : '';
+			$opt1 = ( isset($aso_options['rcmnd_opt1'] ) ) ? filter_val($aso_options['rcmnd_opt1'],FILTER_SANITIZE_STRING) : '';
 			
 			$message = $responseCode;
 			
@@ -198,14 +198,14 @@ class Rcmnd_referral_Public {
 	 */
 	public function filter_woocommerce_cart_item_name( $item_name,  $cart_item,  $cart_item_key ) {
         
-        $default = $item_name;
+        $default = filter_val($item_name,FILTER_SANITIZE_STRING);
         
         $data = (array)WC()->session->get( '_ld_woo_product_data' );
     	if ( empty( $data[$cart_item_key] ) ) {
     		$data[$cart_item_key] = array();
     	}
     
-    	return empty( $data[$cart_item_key]["citem-name"] ) ? $default :  $data[$cart_item_key]["citem-name"];
+    	return empty( $data[$cart_item_key]["citem-name"] ) ? $default :  filter_val($data[$cart_item_key]["citem-name"],FILTER_SANITIZE_STRING);
     }
 	
 	/**
@@ -219,7 +219,7 @@ class Rcmnd_referral_Public {
 		}
 
 		$aso_options = get_option( 'rcmnd_aso' );
-		$opt2 = ( isset($aso_options['rcmnd_opt2'] ) ) ? $aso_options['rcmnd_opt2'] : '';
+		$opt2 = ( isset($aso_options['rcmnd_opt2'] ) ) ? filter_val($aso_options['rcmnd_opt2'],FILTER_SANITIZE_STRING) : '';
 
 		if($cookieValue != '' && $opt2 != '')
 		{   
