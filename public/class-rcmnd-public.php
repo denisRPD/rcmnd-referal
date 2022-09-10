@@ -145,6 +145,8 @@ class Rcmnd_referral_Public {
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
 
+		unset($_SESSION["rcmnd_cookie_paid"]);
+
 		if(isset ($_SESSION["rcmnd_cookie"]) && isset($cookieValue))
 		{
 			$gso_options = get_option( 'rcmnd_gso' );
@@ -157,8 +159,6 @@ class Rcmnd_referral_Public {
 				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT)
 			);
 		
-			$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('false');
-
 			$responseCode = $this->rcmnd_api_call($body);
 			
 			if ($responseCode === 200) 
@@ -183,7 +183,7 @@ class Rcmnd_referral_Public {
 		if( isset ($_SESSION["rcmnd_cookie_paid"])){
 			$cookieValuePaid = sanitize_text_field($_SESSION["rcmnd_cookie_paid"]);
 		}
-		
+
 		if($cookieValuePaid === 'true'){
 			$message = '
 					<div class="rcmndref-payment-success">
@@ -201,8 +201,6 @@ class Rcmnd_referral_Public {
 					</div>
 					</br>';
 		}
-		
-		
 					
 		echo wp_kses_post($message);
 	}
