@@ -186,7 +186,9 @@ class Rcmnd_referral {
 			// Show response on add to cart and thankyour pages (PRODUCTION MODE)
             $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_addedtocart',1,6 );
             //$this->loader->add_filter( 'woocommerce_thankyou_order_received_text', $plugin_public, 'rcmnd_check_referral_order_additional_text',1,2);
-            $this->loader->add_action( 'woocommerce_thankyou', $plugin_public, 'rcmnd_check_referral_prod',1,6 );
+			
+			$this->loader->add_action( 'woocommerce_order_status_processing', $plugin_public, 'rcmnd_check_referral_prod',10,1 );
+            $this->loader->add_action( 'woocommerce_thankyou', $plugin_public, 'rcmnd_check_referral_prod_message',1,6 );
         }
 
 		// Show recommend referral notice below add to cart button
