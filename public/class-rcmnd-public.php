@@ -166,7 +166,7 @@ class Rcmnd_referral_Public {
 			$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('false');
 		}
 		
-		//unset($_SESSION["rcmnd_cookie"]);
+		unset($_SESSION["rcmnd_cookie"]);
     }
 	
 	/**
@@ -178,15 +178,11 @@ class Rcmnd_referral_Public {
 		$aso_options = get_option( 'rcmnd_aso' );
 		$opt1 = ( isset($aso_options['rcmnd_opt1'] ) ) ? sanitize_text_field($aso_options['rcmnd_opt1']) : '';
 		
-		if( isset ($_SESSION["rcmnd_cookie"])){
-			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
-		}
-		
-		if( isset ($_SESSION["rcmnd_cookie"])){
+		if( isset ($_SESSION["rcmnd_cookie_paid"])){
 			$cookieValuePaid = sanitize_text_field($_SESSION["rcmnd_cookie_paid"]);
 		}
 		
-		if($cookieValue != '' && $cookieValuePaid === 'true'){
+		if($cookieValuePaid === 'true'){
 			$message = '
 					<div class="rcmndref-payment-success">
 						<div class="rcmndref-payment-success-image" style="float:left;width:5%;">
