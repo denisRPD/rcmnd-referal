@@ -145,27 +145,30 @@ class Rcmnd_referral_Public {
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
 
-
-		$gso_options = get_option( 'rcmnd_gso' );
-		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';					
-		
-		$body = array(
-			'apiToken' => $pkey,
-			'code' => $cookieValue,
-			'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
-			'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT)
-		);
-		
-		$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('false');
-
-		$responseCode = $this->rcmnd_api_call($body);
-			
-		if ($responseCode === 200) 
+		if(isset ($_SESSION["rcmnd_cookie"]) && isset($cookieValue))
 		{
-			$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('true');
+			$gso_options = get_option( 'rcmnd_gso' );
+			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';					
+		
+			$body = array(
+				'apiToken' => $pkey,
+				'code' => $cookieValue,
+				'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
+				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT)
+			);
+		
+			$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('false');
+
+			$responseCode = $this->rcmnd_api_call($body);
+			
+			if ($responseCode === 200) 
+			{
+				$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('true');
+			}
+		
+			unset($_SESSION["rcmnd_cookie"]);
 		}
 		
-		unset($_SESSION["rcmnd_cookie"]);
     }
 	
 	/**
