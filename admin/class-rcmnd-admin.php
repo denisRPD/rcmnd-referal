@@ -199,7 +199,7 @@ class Rcmnd_referral_Admin {
 	private function rcmnd_gso_sanitize( $input ) {
 		$sanitary_values = array();
 		if ( isset( $input['rcmnd_pkey'] ) ) {
-			$sanitary_values['rcmnd_pkey'] = filter_var($input['rcmnd_pkey'], FILTER_SANITIZE_STRING);
+			$sanitary_values['rcmnd_pkey'] = sanitize_text_field($input['rcmnd_pkey']);
 		}
 		return $sanitary_values;
 	}
@@ -207,11 +207,11 @@ class Rcmnd_referral_Admin {
 	private function rcmnd_aso_sanitize( $input ) {
 		$sanitary_values = array();
 		if ( isset( $input['rcmnd_opt1'] ) ) {
-			$sanitary_values['rcmnd_opt1'] = filter_var($input['rcmnd_opt1'], FILTER_SANITIZE_STRING);
+			$sanitary_values['rcmnd_opt1'] = sanitize_text_field($input['rcmnd_opt1']);
 		}
 		
 		if ( isset( $input['rcmnd_opt2'] ) ) {
-			$sanitary_values['rcmnd_opt2'] = filter_var($input['rcmnd_opt2'], FILTER_SANITIZE_STRING);
+			$sanitary_values['rcmnd_opt2'] = sanitize_text_field($input['rcmnd_opt2']);
 		}
 		return $sanitary_values;
 	}
@@ -315,7 +315,7 @@ class Rcmnd_referral_Admin {
 	 */
 	private function rcmnd_check_connection(){
 		$gso_options = get_option( 'rcmnd_gso' );
-		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? filter_var($gso_options['rcmnd_pkey'], FILTER_SANITIZE_STRING) : '';	
+		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
 		$code = 'test-connection';
 
 		$body = array(

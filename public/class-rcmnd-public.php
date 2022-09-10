@@ -97,11 +97,11 @@ class Rcmnd_referral_Public {
 	public function rcmnd_check_referral_test( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ){
 		
 		if( isset ($_SESSION["rcmnd_cookie"])){
-			$cookieValue = filter_var($_SESSION["rcmnd_cookie"], FILTER_SANITIZE_STRING);
+			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
 
 		$gso_options = get_option( 'rcmnd_gso' );
-		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? filter_var($gso_options['rcmnd_pkey'],FILTER_SANITIZE_STRING) : '';	
+		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
 
 		$body = array(
 			'apiToken' => $pkey,
@@ -136,35 +136,34 @@ class Rcmnd_referral_Public {
             $data  = $order->get_data(); // The Order data
             			
 			if( isset ($data['billing']['email'])){
-				$billing_email = filter_val($data['billing']['email'],FILTER_SANITIZE_STRING);
+				$billing_email = sanitize_text_field($data['billing']['email']);
 			}
 			
 			if( isset ($data['billing']['phone'])){
-				$billing_phone = filter_val($data['billing']['phone'],FILTER_SANITIZE_STRING);
+				$billing_phone = sanitize_text_field($data['billing']['phone']);
 			}
 			
 			if( isset ($_SESSION["rcmnd_cookie"])){
-				$cookieValue = filter_var($_SESSION["rcmnd_cookie"], FILTER_SANITIZE_STRING);
+				$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 			}
 
 
 			$gso_options = get_option( 'rcmnd_gso' );
-			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? filter_val($gso_options['rcmnd_pkey'],FILTER_SANITIZE_STRING) : '';					
+			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';					
 			
 			$body = array(
 				'apiToken' => $pkey,
 				'code' => $cookieValue,
 				'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
-				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT);
+				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT)
 			);
 			
 			$responseCode = $this->rcmnd_api_call($body);
 			
 			$aso_options = get_option( 'rcmnd_aso' );
-			$opt1 = ( isset($aso_options['rcmnd_opt1'] ) ) ? filter_val($aso_options['rcmnd_opt1'],FILTER_SANITIZE_STRING) : '';
+			$opt1 = ( isset($aso_options['rcmnd_opt1'] ) ) ? sanitize_text_field($aso_options['rcmnd_opt1']) : '';
 			
-			$message = $responseCode;
-			
+					
 			if ($responseCode === 200) 
 			{
 				$message = '
@@ -185,8 +184,9 @@ class Rcmnd_referral_Public {
 			}
 			
 			unset($_SESSION["rcmnd_cookie"]);
+		
 
-			echo $message;
+			echo wp_kses_post($message);
         }
     }
 	
@@ -198,14 +198,14 @@ class Rcmnd_referral_Public {
 	 */
 	public function filter_woocommerce_cart_item_name( $item_name,  $cart_item,  $cart_item_key ) {
         
-        $default = filter_val($item_name,FILTER_SANITIZE_STRING);
+        $default = sanitize_text_field($item_name);
         
         $data = (array)WC()->session->get( '_ld_woo_product_data' );
     	if ( empty( $data[$cart_item_key] ) ) {
     		$data[$cart_item_key] = array();
     	}
     
-    	return empty( $data[$cart_item_key]["citem-name"] ) ? $default :  filter_val($data[$cart_item_key]["citem-name"],FILTER_SANITIZE_STRING);
+    	return empty( $data[$cart_item_key]["citem-name"] ) ? $default :  sanitize_text_field($data[$cart_item_key]["citem-name"]);
     }
 	
 	/**
@@ -215,16 +215,16 @@ class Rcmnd_referral_Public {
 	 */
 	public function rcmnd_after_add_to_cart_notice(){
 		if( isset ($_SESSION["rcmnd_cookie"])){
-			$cookieValue = filter_var($_SESSION["rcmnd_cookie"], FILTER_SANITIZE_STRING);
+			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
 
 		$aso_options = get_option( 'rcmnd_aso' );
-		$opt2 = ( isset($aso_options['rcmnd_opt2'] ) ) ? filter_val($aso_options['rcmnd_opt2'],FILTER_SANITIZE_STRING) : '';
+		$opt2 = ( isset($aso_options['rcmnd_opt2'] ) ) ? sanitize_text_field($aso_options['rcmnd_opt2']) : '';
+
 
 		if($cookieValue != '' && $opt2 != '')
 		{   
-			echo '
-			<div class="rcmndref-tag-parent-cart" title="' . esc_html($cookieValue) . '">
+			$opt2_message = '<div class="rcmndref-tag-parent-cart" title="' . esc_html($cookieValue) . '">
 				<div style="float:left;width:10%;">
 					<a target="_blank" href="https://recommend.co">
 						<img style="margin: 1.4em 0;max-width:35px;width:100%;" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'">
@@ -235,6 +235,8 @@ class Rcmnd_referral_Public {
 				</div>
 			</div>';
         }
+
+		echo wp_kses_post($opt2_message);
 	}
 	
 	
@@ -281,10 +283,10 @@ class Rcmnd_referral_Public {
 	 * @since    1.1
 	 */
 	private function rcmnd_api_call($body){
-		
 		$httpCode = 500;
+		//$url = "https://rpd-api-stage.azurewebsites.net/apikeys";
 		$url = "https://api.recommend.co/apikeys";
-		
+
 		$args = array(
 			'method'      => 'POST',
 			'body'        => wp_json_encode( $body ),
@@ -320,28 +322,28 @@ class Rcmnd_referral_Public {
         $parameterRcmndID = '';
         
         if (isset($_GET['RcmndRef'])){
-            $parameterRcmndID = filter_var($_GET['RcmndRef'], FILTER_SANITIZE_STRING);
+            $parameterRcmndID = sanitize_text_field($_GET['RcmndRef']);
         }
         
         if (isset($_GET['RcmndREF'])){
-			$parameterRcmndID = filter_var($_GET['RcmndREF'], FILTER_SANITIZE_STRING);        
+			$parameterRcmndID = sanitize_text_field($_GET['RcmndREF']);        
         }
         
         if (isset($_GET['RCMNDREF'])){
-        	$parameterRcmndID = filter_var($_GET['RCMNDREF'], FILTER_SANITIZE_STRING);        
+        	$parameterRcmndID = sanitize_text_field($_GET['RCMNDREF']);        
         }
         
         if (isset($_GET['rcmndRef'])){
-        	$parameterRcmndID = filter_var($_GET['rcmndRef'], FILTER_SANITIZE_STRING);        
+        	$parameterRcmndID = sanitize_text_field($_GET['rcmndRef']);        
         }
         
         if (isset($_GET['rcmndref'])){
-			$parameterRcmndID = filter_var($_GET['rcmndref'], FILTER_SANITIZE_STRING);       
+			$parameterRcmndID = sanitize_text_field($_GET['rcmndref']);       
         }
 
         if($parameterRcmndID != '')
         {            
-            $_SESSION["rcmnd_cookie"] = filter_var($parameterRcmndID, FILTER_SANITIZE_STRING);
+            $_SESSION["rcmnd_cookie"] = sanitize_text_field($parameterRcmndID);
         }
     }
 
