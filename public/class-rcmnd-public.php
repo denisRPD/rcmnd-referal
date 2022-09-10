@@ -297,9 +297,9 @@ class Rcmnd_referral_Public {
 	 */
 	private function rcmnd_api_call($body){
 		$httpCode = 500;
-		//$url = "https://api.recommend.co/apikeys";
+		$url = "https://api.recommend.co/apikeys";
 		
-		$url = "https://rpd-api-stage.azurewebsites.net/apikeys";
+		//$url = "https://rpd-api-stage.azurewebsites.net/apikeys";
 
 		
 		$args = array(
