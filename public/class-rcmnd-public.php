@@ -156,14 +156,13 @@ class Rcmnd_referral_Public {
 			'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT)
 		);
 		
+		$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('false');
+
 		$responseCode = $this->rcmnd_api_call($body);
 			
 		if ($responseCode === 200) 
 		{
 			$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('true');
-		}
-		else{
-			$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('false');
 		}
 		
 		unset($_SESSION["rcmnd_cookie"]);
