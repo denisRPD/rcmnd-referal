@@ -1,8 +1,5 @@
 <?php
 
-// Starting session
-session_start();
-
 /**
  * The public-facing functionality of the plugin.
  *
@@ -96,6 +93,8 @@ class Rcmnd_referral_Public {
 	 */
 	public function rcmnd_check_referral_test( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ){
 		
+		session_start();
+		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
@@ -127,6 +126,9 @@ class Rcmnd_referral_Public {
         if ( ! $order_id ){
             return;
         }
+		
+		session_start();
+		
          // Getting an instance of the order object
         $order = wc_get_order( $order_id );
 	
@@ -177,6 +179,9 @@ class Rcmnd_referral_Public {
 	 * @since    1.1
 	 */
 	public function rcmnd_check_referral_prod_message($order_id){
+		
+		session_start();
+		
 		$aso_options = get_option( 'rcmnd_aso' );
 		$opt1 = ( isset($aso_options['rcmnd_opt1'] ) ) ? sanitize_text_field($aso_options['rcmnd_opt1']) : '';
 		
@@ -229,6 +234,9 @@ class Rcmnd_referral_Public {
 	 * @since    1.1
 	 */
 	public function rcmnd_after_add_to_cart_notice(){
+		
+		session_start();
+		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
@@ -277,7 +285,7 @@ class Rcmnd_referral_Public {
 					<div class="rcmndref-tag-parent">
 						<div style="float:left;width:10%;margin-top: 2%;">
 							<a target="_blank" href="https://recommend.co">
-								<img title="' . __( 'This product was recommended to you.', 'rcmnd' ) . '" class="rcmndref-tag" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'"></img>
+								<img title="' . __( 'This product was recommended to you.', 'recommend-referral-integration' ) . '" class="rcmndref-tag" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'"></img>
 							</a>
 						</div>
 						<div style="float:right;width:85%;">
@@ -358,6 +366,7 @@ class Rcmnd_referral_Public {
 
         if($parameterRcmndID != '')
         {            
+			session_start();
             $_SESSION["rcmnd_cookie"] = sanitize_text_field($parameterRcmndID);
         }
     }

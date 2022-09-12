@@ -175,7 +175,7 @@ class Rcmnd_referral {
         
 		// Check if test mode is active
 		$gso_options = get_option( 'rcmnd_gso' );
-		$is_test = ( isset($gso_options['rcmnd_pkey'] ) ) ? $gso_options['rcmnd_pkey'] : '';	
+		$is_test = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
 		$is_test_mode = ($is_test == 'on') ? true : false; 
 		
 		
