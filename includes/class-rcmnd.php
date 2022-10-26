@@ -175,9 +175,11 @@ class Rcmnd_referral {
         
 		// Check if test mode is active
 		$gso_options = get_option( 'rcmnd_gso' );
-		$is_test = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
-		$is_test_mode = ($is_test == 'on') ? true : false; 
+		//$is_test = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
+		//$is_test_mode = ($is_test == 'on') ? true : false; 
 		
+		$is_test = ( isset($gso_options['rcmnd_istest'] ) ) ? $gso_options['rcmnd_istest'] : 'off';		
+		$is_test_mode = ($is_test == 'on') ? true : false; 
 		
         if($is_test_mode){
             $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_check_referral_test',1,6 ); // Check referral code on add to cart action (TEST MODE)

@@ -3,7 +3,7 @@ Contributors: denisrcmnd
 Donate link: https://about.recommend.co
 Tags: recommend, referral, webshop, integration, codes
 Requires at least: 4.6
-Tested up to: 6.0.1
+Tested up to: 6.1
 Requires PHP: 5.6
 Stable tag: 1.1
 License: GPLv2 or later
@@ -51,6 +51,9 @@ All the answers are on our site (at least we try): https://about.recommend.co/ap
 
 
 == Changelog ==
+
+= 1.2 =
+* Session Starting Fix. Test mode fix. Tested up to 6.0.3.
 
 = 1.1 =
 * Stable release.
