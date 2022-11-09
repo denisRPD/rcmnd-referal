@@ -5,7 +5,7 @@ Tags: recommend, referral, webshop, integration, codes
 Requires at least: 4.6
 Tested up to: 6.1
 Requires PHP: 5.6
-Stable tag: 1.3.2
+Stable tag: 1.3.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,12 @@ All the answers are on our site (at least we try): https://about.recommend.co/ap
 
 
 == Changelog ==
+
+= 1.3.4 =
+* Code cleanup.
+
+= 1.3.3 =
+* Session Call Fix.
 
 = 1.3.2 =
 * Register Function Fix in Admin page.
