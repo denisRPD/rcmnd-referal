@@ -52,6 +52,9 @@ All the answers are on our site (at least we try): https://about.recommend.co/ap
 
 == Changelog ==
 
+= 1.3.2 =
+* Register Function Fix in Admin page.
+
 = 1.3.1 =
 * Minor Fixes.
 
