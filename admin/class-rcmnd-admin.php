@@ -126,7 +126,7 @@ class Rcmnd_referral_Admin {
 		register_setting(
 			'rcmnd_gso_group', // option_group
 			'rcmnd_gso', // option_name
-			array( $this, 'rcmnd_gso_sanitize' ), // sanitize_callback
+			array( $this, 'rcmnd_gso_sanitize' ) // sanitize_callback
 		);
 		
 
@@ -160,7 +160,7 @@ class Rcmnd_referral_Admin {
 		register_setting(
 			'rcmnd_aso_group', // option_group
 			'rcmnd_aso', // option_name
-			array( $this, 'rcmnd_aso_sanitize' ), // sanitize_callback
+			array( $this, 'rcmnd_aso_sanitize' ) // sanitize_callback
 		);
 		
 		add_settings_section(
