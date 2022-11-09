@@ -1,6 +1,4 @@
 <?php
-
-// Starting session
 session_start();
 
 /**
@@ -95,7 +93,6 @@ class Rcmnd_referral_Public {
 	 * @since    1.1
 	 */
 	public function rcmnd_check_referral_test( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ){
-		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
@@ -119,54 +116,75 @@ class Rcmnd_referral_Public {
 	}
 	
 	/**
-	 * Check referral conversion via API, PRODUCTION MODE
+	 * Check referral conversion via API on processing order, PRODUCTION MODE
 	 *
 	 * @since    1.1
 	 */
-	public function rcmnd_check_referral_prod( $order_id ){
+	public function rcmnd_check_referral_prod($order_id){
         if ( ! $order_id ){
             return;
         }
+				
          // Getting an instance of the order object
         $order = wc_get_order( $order_id );
+	
+		$order_key = $order->get_order_number(); // The Order key
+		$data  = $order->get_data(); // The Order data
+					
+		if( isset ($data['billing']['email'])){
+			$billing_email = sanitize_text_field($data['billing']['email']);
+		}
+		
+		if( isset ($data['billing']['phone'])){
+			$billing_phone = sanitize_text_field($data['billing']['phone']);
+		}
+		
+		if( isset ($_SESSION["rcmnd_cookie"])){
+			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
+		}
 
-        if($order->is_paid())
-        {
-            $order_key = $order->get_order_number(); // The Order key
-            $data  = $order->get_data(); // The Order data
-            			
-			if( isset ($data['billing']['email'])){
-				$billing_email = sanitize_text_field($data['billing']['email']);
-			}
-			
-			if( isset ($data['billing']['phone'])){
-				$billing_phone = sanitize_text_field($data['billing']['phone']);
-			}
-			
-			if( isset ($_SESSION["rcmnd_cookie"])){
-				$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
-			}
+		unset($_SESSION["rcmnd_cookie_paid"]);
 
-
+		if(isset ($_SESSION["rcmnd_cookie"]) && isset($cookieValue))
+		{
 			$gso_options = get_option( 'rcmnd_gso' );
 			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';					
-			
+		
 			$body = array(
 				'apiToken' => $pkey,
 				'code' => $cookieValue,
 				'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
 				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT)
 			);
-			
+		
 			$responseCode = $this->rcmnd_api_call($body);
 			
-			$aso_options = get_option( 'rcmnd_aso' );
-			$opt1 = ( isset($aso_options['rcmnd_opt1'] ) ) ? sanitize_text_field($aso_options['rcmnd_opt1']) : '';
-			
-					
 			if ($responseCode === 200) 
 			{
-				$message = '
+				$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('true');
+			}
+		
+			unset($_SESSION["rcmnd_cookie"]);
+		}
+		
+    }
+	
+	/**
+	 * Display success referral conversion on thank you page, PRODUCTION MODE
+	 *
+	 * @since    1.1
+	 */
+	public function rcmnd_check_referral_prod_message($order_id){
+				
+		$aso_options = get_option( 'rcmnd_aso' );
+		$opt1 = ( isset($aso_options['rcmnd_opt1'] ) ) ? sanitize_text_field($aso_options['rcmnd_opt1']) : '';
+		
+		if( isset ($_SESSION["rcmnd_cookie_paid"])){
+			$cookieValuePaid = sanitize_text_field($_SESSION["rcmnd_cookie_paid"]);
+		}
+
+		if($cookieValuePaid === 'true'){
+			$message = '
 					<div class="rcmndref-payment-success">
 						<div class="rcmndref-payment-success-image" style="float:left;width:5%;">
 							<a target="_blank" href="https://recommend.co">
@@ -181,14 +199,10 @@ class Rcmnd_referral_Public {
 						</div>
 					</div>
 					</br>';
-			}
-			
-			unset($_SESSION["rcmnd_cookie"]);
-		
-
-			echo wp_kses_post($message);
-        }
-    }
+		}
+					
+		echo wp_kses_post($message);
+	}
 	
 	
 	/**
@@ -214,6 +228,7 @@ class Rcmnd_referral_Public {
 	 * @since    1.1
 	 */
 	public function rcmnd_after_add_to_cart_notice(){
+				
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
@@ -221,10 +236,10 @@ class Rcmnd_referral_Public {
 		$aso_options = get_option( 'rcmnd_aso' );
 		$opt2 = ( isset($aso_options['rcmnd_opt2'] ) ) ? sanitize_text_field($aso_options['rcmnd_opt2']) : '';
 
-
 		if($cookieValue != '' && $opt2 != '')
 		{   
-			$opt2_message = '<div class="rcmndref-tag-parent-cart" title="' . esc_html($cookieValue) . '">
+			echo '
+			<div class="rcmndref-tag-parent-cart" title="' . esc_html($cookieValue) . '">
 				<div style="float:left;width:10%;">
 					<a target="_blank" href="https://recommend.co">
 						<img style="margin: 1.4em 0;max-width:35px;width:100%;" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'">
@@ -235,8 +250,6 @@ class Rcmnd_referral_Public {
 				</div>
 			</div>';
         }
-
-		echo wp_kses_post($opt2_message);
 	}
 	
 	
@@ -264,7 +277,7 @@ class Rcmnd_referral_Public {
 					<div class="rcmndref-tag-parent">
 						<div style="float:left;width:10%;margin-top: 2%;">
 							<a target="_blank" href="https://recommend.co">
-								<img title="' . __( 'This product was recommended to you.', 'rcmnd' ) . '" class="rcmndref-tag" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'"></img>
+								<img title="' . __( 'This product was recommended to you.', 'recommend-referral-integration' ) . '" class="rcmndref-tag" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'"></img>
 							</a>
 						</div>
 						<div style="float:right;width:85%;">
@@ -284,9 +297,11 @@ class Rcmnd_referral_Public {
 	 */
 	private function rcmnd_api_call($body){
 		$httpCode = 500;
-		//$url = "https://rpd-api-stage.azurewebsites.net/apikeys";
 		$url = "https://api.recommend.co/apikeys";
+		
+		//$url = "https://rpd-api-stage.azurewebsites.net/apikeys";
 
+		
 		$args = array(
 			'method'      => 'POST',
 			'body'        => wp_json_encode( $body ),

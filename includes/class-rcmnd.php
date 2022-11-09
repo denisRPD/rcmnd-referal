@@ -175,9 +175,11 @@ class Rcmnd_referral {
         
 		// Check if test mode is active
 		$gso_options = get_option( 'rcmnd_gso' );
-		$is_test = ( isset($gso_options['rcmnd_pkey'] ) ) ? $gso_options['rcmnd_pkey'] : '';	
-		$is_test_mode = ($is_test == 'on') ? true : false; 
+		//$is_test = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
+		//$is_test_mode = ($is_test == 'on') ? true : false; 
 		
+		$is_test = ( isset($gso_options['rcmnd_istest'] ) ) ? $gso_options['rcmnd_istest'] : 'off';		
+		$is_test_mode = ($is_test == 'on') ? true : false; 
 		
         if($is_test_mode){
             $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_check_referral_test',1,6 ); // Check referral code on add to cart action (TEST MODE)
@@ -186,7 +188,9 @@ class Rcmnd_referral {
 			// Show response on add to cart and thankyour pages (PRODUCTION MODE)
             $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_addedtocart',1,6 );
             //$this->loader->add_filter( 'woocommerce_thankyou_order_received_text', $plugin_public, 'rcmnd_check_referral_order_additional_text',1,2);
-            $this->loader->add_action( 'woocommerce_thankyou', $plugin_public, 'rcmnd_check_referral_prod',1,6 );
+			
+			$this->loader->add_action( 'woocommerce_order_status_processing', $plugin_public, 'rcmnd_check_referral_prod',10,1 );
+            $this->loader->add_action( 'woocommerce_thankyou', $plugin_public, 'rcmnd_check_referral_prod_message',1,6 );
         }
 
 		// Show recommend referral notice below add to cart button

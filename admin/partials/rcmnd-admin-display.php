@@ -28,8 +28,8 @@
 		$active_advanced= ($active_tab=='advanced' ? 'nav-tab-active':'');
 	?>
 	<h2 class="nav-tab-wrapper">
-		<a href="?page=rcmnd-referal&tab=general" class="nav-tab '. $active_general . '"><?php echo esc_html( __( 'General', 'rcmnd' )) ?></a>
-		<a href="?page=rcmnd-referal&tab=advanced" class="nav-tab '. $active_advanced . '"><?php echo esc_html( __( 'Advanced', 'rcmnd' )) ?></a>
+		<a href="?page=rcmnd-referal&tab=general" class="nav-tab '. $active_general . '"><?php echo esc_html( __( 'General', 'recommend-referral-integration' )) ?></a>
+		<a href="?page=rcmnd-referal&tab=advanced" class="nav-tab '. $active_advanced . '"><?php echo esc_html( __( 'Advanced', 'recommend-referral-integration' )) ?></a>
 	</h2>
 	
 	<?php
@@ -47,7 +47,7 @@
 			settings_fields( 'rcmnd_aso_group' );
 			do_settings_sections( 'rcmnd_aso' );
 		}
-        submit_button(__( 'Save changes', 'rcmnd' ), 'primary');
+        submit_button(__( 'Save changes', 'recommend-referral-integration' ), 'primary');
         ?>
     </form>
 </div>
