@@ -1,5 +1,5 @@
 <?php
-@session_start();
+session_start();
 
 /**
  * The public-facing functionality of the plugin.
@@ -182,6 +182,9 @@ class Rcmnd_referral_Public {
 		if( isset ($_SESSION["rcmnd_cookie_paid"])){
 			$cookieValuePaid = sanitize_text_field($_SESSION["rcmnd_cookie_paid"]);
 		}
+		else{
+			$cookieValuePaid = 'false';
+		}
 
 		if($cookieValuePaid === 'true'){
 			$message = '
@@ -199,6 +202,9 @@ class Rcmnd_referral_Public {
 						</div>
 					</div>
 					</br>';
+		}		
+		else{
+			$message = '';
 		}
 					
 		echo wp_kses_post($message);
