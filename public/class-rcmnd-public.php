@@ -99,6 +99,9 @@ class Rcmnd_referral_Public {
 		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
+		}	
+		else{
+			$cookieValue = '';
 		}
 
 		$gso_options = get_option( 'rcmnd_gso' );
