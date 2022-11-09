@@ -1,5 +1,5 @@
 <?php
-session_start();
+@session_start();
 
 /**
  * The public-facing functionality of the plugin.
