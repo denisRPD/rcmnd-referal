@@ -131,12 +131,15 @@ class Rcmnd_referral_Public {
         if ( ! $order_id ){
             return;
         }
-				
+
          // Getting an instance of the order object
         $order = wc_get_order( $order_id );
 	
 		$order_key = $order->get_order_number(); // The Order key
 		$data  = $order->get_data(); // The Order data
+
+		$order_total = '0';		
+		$order_currency = '';
 					
 		if( isset ($data['billing']['email'])){
 			$billing_email = sanitize_text_field($data['billing']['email']);
@@ -145,31 +148,54 @@ class Rcmnd_referral_Public {
 		if( isset ($data['billing']['phone'])){
 			$billing_phone = sanitize_text_field($data['billing']['phone']);
 		}
+
+		if( isset ($data['total'])){
+			$order_total = $data['total'];
+		}
+		
+		if( isset ($data['currency'])){
+			$order_currency = $data['currency'];
+		}
 		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
+			
+		error_log($cookieValue);
 
 		unset($_SESSION["rcmnd_cookie_paid"]);
 
 		if(isset ($_SESSION["rcmnd_cookie"]) && isset($cookieValue))
 		{
+			error_log("Getting inside request");
+
 			$gso_options = get_option( 'rcmnd_gso' );
 			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';					
 		
+			error_log($pkey);
+
+			
 			$body = array(
 				'apiToken' => $pkey,
 				'code' => $cookieValue,
 				'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
-				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT)
+				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT),
+				'cartTotal' => sanitize_text_field($order_total)  . ' ' . sanitize_text_field($order_currency),
+				'orderNumber' => sanitize_text_field($order_key)
 			);
 		
 			$responseCode = $this->rcmnd_api_call($body);
+			
+			error_log($responseCode);
+
 			
 			if ($responseCode === 200) 
 			{
 				$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('true');
 			}
+			
+			error_log($_SESSION["rcmnd_cookie_paid"]);
+
 		
 			unset($_SESSION["rcmnd_cookie"]);
 		}
@@ -255,13 +281,13 @@ class Rcmnd_referral_Public {
 		if($cookieValue != '' && $opt2 != '')
 		{   
 			echo '
-			<div class="rcmndref-tag-parent-cart" title="' . esc_html($cookieValue) . '">
+			<div class="rcmndref-tag-parent-cart" style="width:100%;" title="' . esc_html($cookieValue) . '">
 				<div style="float:left;width:10%;">
 					<a target="_blank" href="https://recommend.co">
 						<img style="margin: 1.4em 0;max-width:35px;width:100%;" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'">
 					</a>
 				</div>
-				<div style="float:left;width:80%;">
+				<div style="float:left;width:90%;">
 					<p style="float:left;margin: 1.8em 0;" class="rcmndref-addtocart-notice">' . esc_html($opt2) . '</span>
 				</div>
 			</div>';
@@ -314,10 +340,7 @@ class Rcmnd_referral_Public {
 	private function rcmnd_api_call($body){
 		$httpCode = 500;
 		$url = "https://api.recommend.co/apikeys";
-		
-		//$url = "https://rpd-api-stage.azurewebsites.net/apikeys";
 
-		
 		$args = array(
 			'method'      => 'POST',
 			'body'        => wp_json_encode( $body ),
