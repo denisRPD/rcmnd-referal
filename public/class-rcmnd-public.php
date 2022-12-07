@@ -90,6 +90,8 @@ class Rcmnd_referral_Public {
         $this->rcmnd_set_cart_tags($cart_item_key, $product_id);
     }
 	
+	
+	
 	/**
 	 * Check referral conversion via API, TEST MODE
 	 *
@@ -184,13 +186,22 @@ class Rcmnd_referral_Public {
 				'orderNumber' => sanitize_text_field($order_key)
 			);
 		
-			$responseCode = $this->rcmnd_api_call($body);
+			$response = $this->rcmnd_api_call($body, '/apikeys');
+			
+		
+			$responseCode = $response->{'httpCode'};
+			$responseMessage = $response->{'httpMessage'};
+			$responseConvesionId = $response->{'conversionId'};
 			
 			error_log($responseCode);
+			error_log($responseMessage);
+			error_log($responseConvesionId);
 
 			
 			if ($responseCode === 200) 
 			{
+				// Add referral code to this order
+				update_post_meta( $order->get_id(), 'rcmnd_conversion_id', $responseConvesionId );
 				$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('true');
 			}
 			
@@ -332,17 +343,153 @@ class Rcmnd_referral_Public {
 		   }
 	}
 	
+	 private function admin_notice() {
+?>
+        <div class="notice notice-success is-dismissible">
+            <p>Connection to Recommend Service OK!</p>
+        </div><?php
+    }
+    
+
+	
+	public function rcmnd_order_action( $actions, $order ){
+		
+		$order_rcmnd_conversion = $order->get_meta('rcmnd_conversion_id'); // The Order data
+
+		error_log($order_rcmnd_conversion);
+				
+		if($order_rcmnd_conversion != null)
+		{
+			// TODO: Fetch status from api using conversionId
+			$order_rcmnd_code_status = 'created'; // $order->get_meta('rcmnd_code_status')
+			
+			if($order_rcmnd_code_status !== 'approved')
+			{
+				$actions['rcmnd_approve_action'] = __('Approve Recommend Conversion', 'WooCommerce');
+			}
+			else
+			{
+				$actions['rcmnd_reject_action'] = __('Reject Recommend Conversion', 'WooCommerce');
+			}
+		}
+		return $actions;
+	}
+	
+	public function triggered_rcmnd_order_approve_action( $order ){
+		error_log("RCMND: User click on approve conversion for order...");
+		
+		$order_key = $order->get_order_number(); // The Order key
+	
+		$order_data_conversion = $order->get_meta('rcmnd_conversion_id');
+		
+		$rcmnd_conversionId = '';
+		if( $order_data_conversion !== null){
+			$rcmnd_conversionId = $order_data_conversion;
+		}
+		
+		$gso_options = get_option( 'rcmnd_gso' );
+		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';				
+		
+		error_log("RCMND: ConversionId = " . $rcmnd_conversionId);
+		
+		if($rcmnd_conversionId != '')
+		{		
+			error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to approve conversion with id = ' . $rcmnd_conversionId);
+
+			$body = array(
+				'apiKey' => '' . $pkey . '',
+				'conversionId' => $rcmnd_conversionId
+			);	
+
+			$response = $this->rcmnd_api_call($body,'/apikeys/approve','PATCH');
+
+            $responseCode = $response->{'httpCode'};
+			$responseMessage = $response->{'httpMessage'};
+			
+			error_log($responseCode);
+
+			
+			if ($responseCode === 200) 
+			{
+				error_log('RCMND: Conversion Approved.');
+			}
+			else
+			{
+				error_log('RCMND: Cannot approve conversion, EX: ' . $responseMessage);
+			}	
+		}
+		else
+		{
+			error_log('RCMND: Conversion cannot be approved Approved since conversionId cannot be read.');
+		}
+	}
+	
+	public function triggered_rcmnd_order_reject_action( $order ){
+		error_log("RCMND: User click on reject conversion for order...");
+		
+
+		$order_key = $order->get_order_number(); // The Order key
+	
+		$order_data_conversion = $order->get_meta('rcmnd_conversion_id');
+		
+		$rcmnd_conversionId = '';
+		if( $order_data_conversion !== null){
+			$rcmnd_conversionId = $order_data_conversion;
+		}
+		
+		$gso_options = get_option( 'rcmnd_gso' );
+		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';				
+		
+		error_log("RCMND: ConversionId = " . $rcmnd_conversionId);
+		
+		if($rcmnd_conversionId != '')
+		{		
+			error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to reject conversion with id = ' . $rcmnd_conversionId);
+
+			$body = array(
+				'apiKey' => $pkey,
+				'conversionId' => $rcmnd_conversionId
+			);	
+
+			$response = $this->rcmnd_api_call($body,'/apikeys/reject','PATCH');
+
+            $responseCode = $response->{'httpCode'};
+			$responseMessage = $response->{'httpMessage'};
+			
+			error_log($responseCode);
+
+			if ($responseCode === 200) 
+			{
+				error_log('RCMND: Conversion Rejected.');
+			}
+			else
+			{
+				error_log('RCMND: Cannot reject conversion, EX: ' . $responseMessage);
+			}	
+		}
+		else
+		{
+			error_log('RCMND: Conversion cannot be reject since conversionId cannot be read.');
+		}
+	}
+	
 	/**
 	 * Recommend API POST REQUEST
 	 *
 	 * @since    1.1
 	 */
-	private function rcmnd_api_call($body){
-		$httpCode = 500;
-		$url = "https://api.recommend.co/apikeys";
+	private function rcmnd_api_call($body, $route, $method='POST'){
+					
+		$response_object = (object) ['httpCode' => 500, 'conversionId' => 0, 'httpMessage' => ''];
+	
+	
+		//$url = "https://api.recommend.co/apikeys";
 
+		$url = 'https://rpd-api-dev.azurewebsites.net' . $route;
+
+		
 		$args = array(
-			'method'      => 'POST',
+			'method'      => $method,
 			'body'        => wp_json_encode( $body ),
 			'timeout'     => '45',
 			'redirection' => '5',
@@ -361,9 +508,21 @@ class Rcmnd_referral_Public {
 		if ( !is_wp_error( $response )) 
 		{
 			$httpCode = wp_remote_retrieve_response_code( $response );
-		}
+			$httpMessage = json_decode( wp_remote_retrieve_body( $response ) );
+					
+			$response_object->httpCode = $httpCode;
 			
-		return $httpCode;
+			if(isset($httpMessage->message)){
+				$response_object->httpMessage = $httpMessage->message;
+			}
+			if(isset($httpMessage->conversionId)){
+				$response_object->conversionId = $httpMessage->conversionId;
+			}
+		}
+		
+		//error_log('message2: ' . $response_object->{'httpMessage'});
+			
+		return $response_object;
 	}
 	
 	/**

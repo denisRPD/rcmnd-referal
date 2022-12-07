@@ -172,7 +172,12 @@ class Rcmnd_referral {
 			
 		$this->loader->add_action( 'init', $plugin_public, 'set_rcmndID_cookie' ); // On init fetch recommend referral code into cookie
         $this->loader->add_filter( 'woocommerce_cart_item_name', $plugin_public, 'filter_woocommerce_cart_item_name', 1, 3 );
-        
+		
+		
+		$this->loader->add_action( 'woocommerce_order_actions', $plugin_public, 'rcmnd_order_action',10,2);
+		$this->loader->add_action( 'woocommerce_order_action_rcmnd_approve_action', $plugin_public, 'triggered_rcmnd_order_approve_action',10,1);
+		$this->loader->add_action( 'woocommerce_order_action_rcmnd_reject_action', $plugin_public, 'triggered_rcmnd_order_reject_action',10,1);
+
 		// Check if test mode is active
 		$gso_options = get_option( 'rcmnd_gso' );
 		//$is_test = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
