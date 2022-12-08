@@ -362,14 +362,51 @@ class Rcmnd_referral_Public {
 		{
 			// TODO: Fetch status from api using conversionId
 			$order_rcmnd_code_status = 'created'; // $order->get_meta('rcmnd_code_status')
+
+			$order_key = $order->get_order_number(); // The Order key
+			$order_data_conversion = $order->get_meta('rcmnd_conversion_id');
+
+			$rcmnd_conversionId = '';
+			if( $order_data_conversion !== null){
+				$rcmnd_conversionId = $order_data_conversion;
+			}
 			
-			if($order_rcmnd_code_status !== 'approved')
+			$gso_options = get_option( 'rcmnd_gso' );
+			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';		
+			
+			$body = array(
+				'apiKey' => '' . $pkey . '',
+				'conversionId' => $rcmnd_conversionId
+			);	
+
+			$response = $this->rcmnd_api_call($body,'/apikeys/getConversionStatus','POST');
+
+            $responseCode = $response->{'httpCode'};
+			$responseMessage = $response->{'httpMessage'};
+			
+			error_log($responseMessage);
+			
+			if($responseMessage !== null)
+			{
+				$order_rcmnd_code_status = $responseMessage;
+			}
+			
+			if($order_rcmnd_code_status === 'created')
+			{
+				$actions['rcmnd_approve_action'] = __('Approve Recommend Conversion', 'WooCommerce');
+				$actions['rcmnd_reject_action'] = __('Reject Recommend Conversion', 'WooCommerce');
+			}
+			else if($order_rcmnd_code_status === 'approved')
+			{
+				$actions['rcmnd_reject_action'] = __('Reject Recommend Conversion', 'WooCommerce');
+			}
+			else if($order_rcmnd_code_status === 'rejected')
 			{
 				$actions['rcmnd_approve_action'] = __('Approve Recommend Conversion', 'WooCommerce');
 			}
-			else
+			else 
 			{
-				$actions['rcmnd_reject_action'] = __('Reject Recommend Conversion', 'WooCommerce');
+				// Status is pending, paid or unknown
 			}
 		}
 		return $actions;
@@ -397,11 +434,11 @@ class Rcmnd_referral_Public {
 			error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to approve conversion with id = ' . $rcmnd_conversionId);
 
 			$body = array(
-				'apiKey' => '' . $pkey . '',
+				'apiKey' => $pkey,
 				'conversionId' => $rcmnd_conversionId
 			);	
 
-			$response = $this->rcmnd_api_call($body,'/apikeys/approve','PATCH');
+			$response = $this->rcmnd_api_call($body,'/apikeys/approve','POST');
 
             $responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
@@ -451,7 +488,7 @@ class Rcmnd_referral_Public {
 				'conversionId' => $rcmnd_conversionId
 			);	
 
-			$response = $this->rcmnd_api_call($body,'/apikeys/reject','PATCH');
+			$response = $this->rcmnd_api_call($body,'/apikeys/reject','POST');
 
             $responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
