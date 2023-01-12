@@ -147,6 +147,15 @@ class Rcmnd_referral_Admin {
 		);
 
 		add_settings_field(
+			'rcmnd_autosync', //id
+			__( 'Auto sync products?', 'rcmnd' ), // title
+			array( $this, 'rcmnd_autosync_cb' ), //callback
+			'rcmnd_gso', //page
+			'rcmnd_gso_section', // section
+			array( 'label_for' => 'rcmnd_autosync' )
+		);
+
+		add_settings_field(
 			'rcmnd_istest', //id
 			__( 'Testing?', 'rcmnd' ), // title
 			array( $this, 'rcmnd_istest_cb' ), //callback
@@ -263,6 +272,25 @@ class Rcmnd_referral_Admin {
 			</fieldset>
 		<?php
 	}
+
+	/**
+	 * Render the autsync checkbox
+	 *
+	 * @since  1.3.6
+	 */
+	public function rcmnd_autosync_cb() {
+		$gso_options = get_option( 'rcmnd_gso' );
+		$autosync = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';
+		$checked = ($autosync == 'on' ) ? 'checked' : '';
+		?>
+			<fieldset>
+				<label>
+					<input type="checkbox" name="rcmnd_gso[rcmnd_autosync]" <?php echo esc_attr($checked); ?>>
+					<p class="description"><?php esc_html(_e( 'If you check this option, products will be automatically syncronized with Recommend on every change.', 'rcmnd' )); ?></p>
+				</label>
+			</fieldset>
+		<?php
+	}
 	
 	public function rcmnd_opt1_cb() {
 		$aso_options = get_option( 'rcmnd_aso' );
@@ -301,11 +329,24 @@ class Rcmnd_referral_Admin {
             <p>Connection to Recommend Service OK!</p>
         </div><?php
     }
+
+	private function admin_sync_notice() {
+		?>
+				<div class="notice notice-success is-dismissible">
+					<p>Syncronization done!</p>
+				</div><?php
+			}
     
     private function admin_error_notice() { ?>
         <div class="notice notice-error is-dismissible">
             <p>Could not connect to Recommend service!</p>
             <span>Check your API Key and try again...</span>
+        </div><?php
+    }
+
+	private function admin_sync_error_notice() { ?>
+        <div class="notice notice-error is-dismissible">
+            <p>Cannot add product.</p>
         </div><?php
     }
 	
@@ -340,7 +381,183 @@ class Rcmnd_referral_Admin {
 		}
 	}
 	
+	/**
+	 * Recommend sync product after update
+	 *
+	 * @since    1.3.6
+	 */
+	public function rcmnd_product_update($product_id, $product){
+		$gso_options = get_option( 'rcmnd_gso' );
+		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
+		$is_sync_on = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';		
+		$is_sync_on_mode = ($is_sync_on == 'on') ? true : false; 
+		
+		error_log("Product updated action triggered. Updating Recommend DB.");
+		
+		if($is_sync_on_mode)
+		{
+			$p_id = $product-> get_id();
+			$p_status = $product->get_status();
+			$p_name = $product->get_name();
+			$p_description = $product->get_short_description();
+			$p_sku = $product->get_sku();
+			$p_permalink = get_permalink( $product->get_id() );
+			$p_price = $product->get_price();
+			$p_stock_status = $product->get_stock_status();
+			$p_categories = $product->get_category_ids();
+
+			error_log('Title => ' . $p_name);
+			/*error_log('Status => ' . $p_status);
+			error_log('apiToken => ' . $pkey);
+			error_log('$categoryId => ' . $categoryId);
+			error_log('internalId => ' . $p_sku);
+			error_log('price => ' . $p_price);
+			error_log('description => ' . ($p_description === '') ? "" : $p_description);
+			error_log('url => ' . $p_permalink);	
+			error_log('image => ' . get_the_post_thumbnail_url($p_id));*/
+
+			if($p_status === 'publish') 
+			{
+				$pr_status = 0;
+				if($p_stock_status === 'outofstock') // outofstock or instock
+				{
+					$pr_status = -2;
+				}
+
+				error_log('status => ' . $pr_status);
+				error_log("-----SENDING TO RECOMMEND------");
+
+				$body = array(
+					'apiToken' => $pkey,
+					'internalId' => $p_sku,
+					'title' => $p_name,
+					'categoryPath' => "woo integration",
+					'price' => $p_price,
+					'url' => $p_permalink,
+					'image' => get_the_post_thumbnail_url($p_id),
+					'description' => ($p_description === '') ? " " : $p_description,
+					'status' => $pr_status
+				);
+
+				// Execute the POST request
+				$response = $this->rcmnd_api_call($body,'/products/sync');
+
+				$responseCode = $response->{'httpCode'};
+				$responseMessage = $response->{'httpMessage'};
+
+				error_log($responseCode);
+				error_log($responseMessage);
+
+				if ( $responseCode != 200 ) {
+					error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
+					//$this->admin_sync_error_notice();
+				}
+			}
+		}
+		else
+		{
+			error_log("Sync mode is off - skipping.");
+		}
+	}
 	
+	
+	/**
+	 * Recommend sync products manually throgh settings page
+	 *
+	 * @since    1.3.6
+	 */
+	private function rcmnd_sync_products(){
+		$gso_options = get_option( 'rcmnd_gso' );
+		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
+		$is_sync_on = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';		
+		$is_sync_on_mode = ($is_sync_on == 'on') ? true : false; 
+		
+		error_log("Trying to sync products on settings update...");
+
+		if($is_sync_on_mode)
+		{
+			// SYNC MODE ON - NEED TO PROCESS PRODUCTS
+			error_log("Starting with products loop");
+
+			$args = array(
+				'post_type'      => 'product'
+			);
+
+			$loop = new WP_Query( $args );
+
+			while ( $loop->have_posts() ) : $loop->the_post();
+				error_log("-----NEW PRODUCT------");
+				global $product;
+
+				$p_id = $product-> get_id();
+				$p_status = $product->get_status();
+				$p_name = $product->get_name();
+				$p_description = $product->get_short_description();
+				$p_sku = $product->get_sku();
+				$p_permalink = get_permalink( $product->get_id() );
+				$p_price = $product->get_price();
+				$p_stock_status = $product->get_stock_status();
+				$p_categories = $product->get_category_ids();
+
+				error_log('Title => ' . $p_name);
+				/*error_log('Status => ' . $p_status);
+				error_log('apiToken => ' . $pkey);
+				error_log('internalId => ' . $p_sku);
+				error_log('price => ' . $p_price);
+				error_log('description => ' . ($p_description === '') ? "pero" : $p_description);
+				error_log('url => ' . $p_permalink);	
+				error_log('image => ' . get_the_post_thumbnail_url($p_id));*/
+
+				if($p_status === 'publish') 
+				{
+					$pr_status = 0;
+					if($p_stock_status === 'outofstock') // outofstock or instock
+					{
+						$pr_status = -2;
+					}
+					error_log('status => ' . $pr_status);
+
+					error_log("-----SENDING TO RECOMMEND------");
+
+					$body = array(
+						'apiToken' => $pkey,
+						'internalId' => $p_sku,
+						'title' => $p_name,
+						'categoryPath' => "woo integration",
+						'price' => $p_price,
+						'url' => $p_permalink,
+						'image' => get_the_post_thumbnail_url($p_id),
+						'description' => ($p_description === '') ? " " : $p_description,
+						'status' => $pr_status
+					);
+
+					// Execute the POST request
+					$response = $this->rcmnd_api_call($body,'/products/sync');
+
+					$responseCode = $response->{'httpCode'};
+					$responseMessage = $response->{'httpMessage'};
+
+					error_log($responseCode);
+					error_log($responseMessage);
+
+
+					if ( $responseCode != 200 ) {
+						error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
+					}
+				}
+
+			endwhile;
+			wp_reset_query();
+
+			error_log("Ending with products loop");
+
+			$this->admin_sync_notice();
+		}
+		else
+		{
+			error_log("Sync mode is off - skipping.");
+		}
+	}
 	
 	
 	/**
@@ -351,10 +568,8 @@ class Rcmnd_referral_Admin {
 	private function rcmnd_api_call($body, $route, $method='POST'){
 		
         $response_object = (object) ['httpCode' => 500, 'httpMessage' => ''];
-
-		//$url = "https://api.recommend.co/apikeys";
-		
-		$url = 'https://rpd-api-dev.azurewebsites.net' . $route;
+	
+		$url = 'https://api.recommend.co' . $route;
 		
 		$args = array(
 			'method'      => $method,

@@ -343,15 +343,18 @@ class Rcmnd_referral_Public {
 		   }
 	}
 	
-	 private function admin_notice() {
-?>
+	 private function admin_notice() {?>
         <div class="notice notice-success is-dismissible">
             <p>Connection to Recommend Service OK!</p>
         </div><?php
     }
     
 
-	
+	/**
+	 * Conversion Update Status Functions
+	 *
+	 * @since    1.3.6
+	 */
 	public function rcmnd_order_action( $actions, $order ){
 		
 		$order_rcmnd_conversion = $order->get_meta('rcmnd_conversion_id'); // The Order data
@@ -464,7 +467,6 @@ class Rcmnd_referral_Public {
 	public function triggered_rcmnd_order_reject_action( $order ){
 		error_log("RCMND: User click on reject conversion for order...");
 		
-
 		$order_key = $order->get_order_number(); // The Order key
 	
 		$order_data_conversion = $order->get_meta('rcmnd_conversion_id');
@@ -519,12 +521,8 @@ class Rcmnd_referral_Public {
 					
 		$response_object = (object) ['httpCode' => 500, 'conversionId' => 0, 'httpMessage' => ''];
 	
-	
-		//$url = "https://api.recommend.co/apikeys";
+		$url = 'https://api.recommend.co' . $route;
 
-		$url = 'https://rpd-api-dev.azurewebsites.net' . $route;
-
-		
 		$args = array(
 			'method'      => $method,
 			'body'        => wp_json_encode( $body ),
