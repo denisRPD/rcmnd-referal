@@ -295,7 +295,8 @@ class Rcmnd_referral_Admin {
 	 *
 	 * @since    1.1
 	 */
-	 private function admin_notice() { ?>
+	 private function admin_notice() {
+?>
         <div class="notice notice-success is-dismissible">
             <p>Connection to Recommend Service OK!</p>
         </div><?php
@@ -307,6 +308,7 @@ class Rcmnd_referral_Admin {
             <span>Check your API Key and try again...</span>
         </div><?php
     }
+	
 	
 	/**
 	 * Recommend API Check connection method
@@ -324,7 +326,11 @@ class Rcmnd_referral_Admin {
 		);
 
 		// Execute the POST request
-		$responseCode = $this->rcmnd_api_call($body);
+	
+		$response = $this->rcmnd_api_call($body,'/apikeys');
+
+		$responseCode = $response->{'httpCode'};
+		$responseMessage = $response->{'httpMessage'};
 		
 		if ( $responseCode != 200 ) {
 			$this->admin_error_notice();
@@ -334,18 +340,24 @@ class Rcmnd_referral_Admin {
 		}
 	}
 	
+	
+	
+	
 	/**
 	 * Recommend API POST REQUEST
 	 *
 	 * @since    1.1
 	 */
-	private function rcmnd_api_call($body){
+	private function rcmnd_api_call($body, $route, $method='POST'){
 		
-		$httpCode = 500;
-		$url = "https://api.recommend.co/apikeys";
+        $response_object = (object) ['httpCode' => 500, 'httpMessage' => ''];
+
+		//$url = "https://api.recommend.co/apikeys";
+		
+		$url = 'https://rpd-api-dev.azurewebsites.net' . $route;
 		
 		$args = array(
-			'method'      => 'POST',
+			'method'      => $method,
 			'body'        => wp_json_encode( $body ),
 			'timeout'     => '45',
 			'redirection' => '5',
@@ -364,9 +376,16 @@ class Rcmnd_referral_Admin {
 		if ( !is_wp_error( $response )) 
 		{
 			$httpCode = wp_remote_retrieve_response_code( $response );
+            $httpMessage = json_decode( wp_remote_retrieve_body( $response ) );
+			
+            $response_object->httpCode = $httpCode;
+			
+			if(isset($httpMessage->message)){
+				$response_object->httpMessage = $httpMessage->message;
+			}
 		}
 			
-		return $httpCode;
+		return $response_object;
 	}
 	
 }
