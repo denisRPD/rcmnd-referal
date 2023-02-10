@@ -29,12 +29,12 @@
 	?>
 	<h2 class="nav-tab-wrapper">
 		<a href="?page=rcmnd-referal&tab=general" class="nav-tab '. $active_general . '"><?php echo esc_html( __( 'General', 'recommend-referral-integration' )) ?></a>
-		<a href="?page=rcmnd-referal&tab=advanced" class="nav-tab '. $active_advanced . '"><?php echo esc_html( __( 'Advanced', 'recommend-referral-integration' )) ?></a>
-	</h2>
+		<a href="?page=rcmnd-referal&tab=advanced" class="nav-tab '. $active_advanced . '"><?php echo esc_html( __( 'Display texts', 'recommend-referral-integration' )) ?></a>	</h2>
 	
 	<?php
 		if ( isset( $_GET['settings-updated'] ) && $_GET['settings-updated'] ){
-			$this->rcmnd_check_connection();	
+			$this->rcmnd_check_connection();
+			$this->rcmnd_sync_products();	
 		} 
 	?>
     <form action="options.php" method="post">
@@ -42,12 +42,13 @@
 		if( $active_tab == "general" ) {
 			settings_fields( 'rcmnd_gso_group' );
 			do_settings_sections( 'rcmnd_gso' );
+			submit_button(__( 'Save changes', 'recommend-referral-integration' ), 'primary');
 		} 
 		if( $active_tab == "advanced" ){
 			settings_fields( 'rcmnd_aso_group' );
 			do_settings_sections( 'rcmnd_aso' );
+			submit_button(__( 'Save changes', 'recommend-referral-integration' ), 'primary');
 		}
-        submit_button(__( 'Save changes', 'recommend-referral-integration' ), 'primary');
         ?>
     </form>
 </div>

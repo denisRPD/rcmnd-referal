@@ -154,6 +154,9 @@ class Rcmnd_referral {
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_options_page' );
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_general_settings' );
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_advanced_settings' );
+
+		$this->loader->add_action( 'woocommerce_update_product', $plugin_admin, 'rcmnd_product_update', 10, 2 );
+		$this->loader->add_action( 'woocommerce_new_product', $plugin_admin, 'rcmnd_product_update', 10, 2 );
 	}
 
 	/**
@@ -172,23 +175,22 @@ class Rcmnd_referral {
 			
 		$this->loader->add_action( 'init', $plugin_public, 'set_rcmndID_cookie' ); // On init fetch recommend referral code into cookie
         $this->loader->add_filter( 'woocommerce_cart_item_name', $plugin_public, 'filter_woocommerce_cart_item_name', 1, 3 );
-        
+		
+		
+		$this->loader->add_action( 'woocommerce_order_actions', $plugin_public, 'rcmnd_order_action',10,2);
+		$this->loader->add_action( 'woocommerce_order_action_rcmnd_approve_action', $plugin_public, 'triggered_rcmnd_order_approve_action',10,1);
+		$this->loader->add_action( 'woocommerce_order_action_rcmnd_reject_action', $plugin_public, 'triggered_rcmnd_order_reject_action',10,1);
+
 		// Check if test mode is active
 		$gso_options = get_option( 'rcmnd_gso' );
-		//$is_test = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
-		//$is_test_mode = ($is_test == 'on') ? true : false; 
-		
 		$is_test = ( isset($gso_options['rcmnd_istest'] ) ) ? $gso_options['rcmnd_istest'] : 'off';		
 		$is_test_mode = ($is_test == 'on') ? true : false; 
-		
         if($is_test_mode){
             $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_check_referral_test',1,6 ); // Check referral code on add to cart action (TEST MODE)
         }
         else{
 			// Show response on add to cart and thankyour pages (PRODUCTION MODE)
-            $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_addedtocart',1,6 );
-            //$this->loader->add_filter( 'woocommerce_thankyou_order_received_text', $plugin_public, 'rcmnd_check_referral_order_additional_text',1,2);
-			
+            $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_addedtocart',1,6 );			
 			$this->loader->add_action( 'woocommerce_order_status_processing', $plugin_public, 'rcmnd_check_referral_prod',10,1 );
             $this->loader->add_action( 'woocommerce_thankyou', $plugin_public, 'rcmnd_check_referral_prod_message',1,6 );
         }
