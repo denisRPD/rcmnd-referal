@@ -99,6 +99,9 @@ class Rcmnd_referral_Public {
 	 */
 	public function rcmnd_check_referral_test( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ){
 		
+		$order_total = '0';		
+		$order_currency = '';
+		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}	
@@ -108,20 +111,26 @@ class Rcmnd_referral_Public {
 
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
-
+		
 		$body = array(
 			'apiToken' => $pkey,
-			'code' => $cookieValue
+			'code' => $cookieValue,
+			'cartTotal' => sanitize_text_field($order_total)  . ' ' . sanitize_text_field($order_currency),
+			'orderNumber' => 'Testing mode'
 		);
-		
-		$responseCode = $this->rcmnd_api_call($body);
-		
+				
+		$response = $this->rcmnd_api_call($body, '/apikeys');
+			
+		$responseCode = $response->{'httpCode'};
+		$responseMessage = $response->{'httpMessage'};
+		$responseConvesionId = $response->{'conversionId'};
+
 		if ($responseCode === 200) 
 		{
 		    $this->rcmnd_set_cart_tags($cart_item_key, $product_id);
 			unset($_SESSION["rcmnd_cookie"]);
 	    }
-
+		
 	}
 	
 	/**
@@ -163,7 +172,7 @@ class Rcmnd_referral_Public {
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
 			
-		error_log($cookieValue);
+		//error_log($cookieValue);
 
 		unset($_SESSION["rcmnd_cookie_paid"]);
 
@@ -174,7 +183,7 @@ class Rcmnd_referral_Public {
 			$gso_options = get_option( 'rcmnd_gso' );
 			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';					
 		
-			error_log($pkey);
+			//error_log($pkey);
 
 			
 			$body = array(
@@ -205,7 +214,7 @@ class Rcmnd_referral_Public {
 				$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('true');
 			}
 			
-			error_log($_SESSION["rcmnd_cookie_paid"]);
+			//error_log($_SESSION["rcmnd_cookie_paid"]);
 
 		
 			unset($_SESSION["rcmnd_cookie"]);
@@ -359,7 +368,7 @@ class Rcmnd_referral_Public {
 		
 		$order_rcmnd_conversion = $order->get_meta('rcmnd_conversion_id'); // The Order data
 
-		error_log($order_rcmnd_conversion);
+		//error_log($order_rcmnd_conversion);
 				
 		if($order_rcmnd_conversion != null)
 		{
@@ -387,7 +396,7 @@ class Rcmnd_referral_Public {
             $responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
 			
-			error_log($responseMessage);
+			//error_log($responseMessage);
 			
 			if($responseMessage !== null)
 			{
