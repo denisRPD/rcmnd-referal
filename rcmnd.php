@@ -16,7 +16,7 @@
  * Plugin Name:       Recommend Referral Integration
  * Plugin URI:        https://about.recommend.co/api-docs
  * Description:       Recommend Referral Integration Plugin.
- * Version:           1.3.6
+ * Version:           1.3.8
  * Author:            Recommend Inc.
  * Author URI:        https://about.recommend.co
  * License:           GPL-2.0+
