@@ -559,6 +559,90 @@ class Rcmnd_referral_Admin {
 		}
 	}
 	
+	/**
+	 * Recommend Sync Options in Product Page
+	 *
+	 * @since    1.3.8
+	 */
+	public function rcmnd_product_custom_fields_add()
+	{
+		global $post;
+
+		echo '<div class="rcmnd_product_sync_field">';
+
+		// Checkbox for turning on or off sync
+		woocommerce_wp_checkbox( array(
+			'id'        => '_rcmnd_product_sync',
+			'description'      => __('Turn on Syncronization with Recommend.', 'rcmnd'),
+			'label'     => __('Sync with Recommend', 'rcmnd'),
+			'desc_tip'  => 'true'
+		));
+
+		echo '</div>';
+
+		
+		// Select list for categories
+		$response = $this->rcmnd_api_call('','/product-categories','GET');
+		$categories = $response->{'httpBody'};
+
+		$options[''] = __( 'Select a Recommend Category...', 'rcmnd'); // default value
+		$this->get_all_categories($categories, $options,'');
+
+		$value = get_post_meta($post->ID,'_rcmnd_product_sync_category',true);
+
+		echo '<div class="rcmnd_product_sync_field">';
+		woocommerce_wp_select( array(
+			'id'        => '_rcmnd_product_sync_category',
+			'description'  => __('Recommend Category selection', 'rcmnd'),
+			'label'     => __('Recommend Category', 'rcmnd'),
+			'desc_tip'  => 'true',
+			'options' =>  $options,
+			'value'   => $value,
+		));
+		echo '</div>';
+	}
+
+	public function product_custom_fields_rcmnd_sync_option($post_id)
+	{
+		// Sync Option turn on or off option save
+		$rcmnd_product_sync = isset( $_POST['_rcmnd_product_sync'] ) ? 'yes' : 'no';
+			update_post_meta($post_id, '_rcmnd_product_sync', esc_attr( $rcmnd_product_sync ));
+		
+		// Sync Option category option save
+		$rcmnd_product_sync_category = isset( $_POST['_rcmnd_product_sync_category'] ) ? $_POST['_rcmnd_product_sync_category'] : '';
+        	update_post_meta($post_id, '_rcmnd_product_sync_category', esc_attr( $rcmnd_product_sync_category ));
+	}
+	
+	public function rcmnd_set_custom_columns($columns) 
+	{
+		$columns['_rcmnd_product_sync'] = __('Recommend Sync', 'rcmnd'); // Sync product on/off
+
+		return $columns;
+	}
+	
+	// Show custom field in a new column in list view
+	public function rcmnd_custom_column( $column, $post_id ) {
+
+		if($column == '_rcmnd_product_sync')
+		{ 
+			$get_rcmnd_product_sync = get_post_meta($post_id,'_rcmnd_product_sync',true);
+
+			if($get_rcmnd_product_sync == 'yes')
+			{ 
+				echo '<div class="rcmnd_product_sync_column_view_field">';
+					echo '<img src="https://static.vecteezy.com/system/resources/previews/002/743/514/original/green-check-mark-icon-in-a-circle-free-vector.jpg" title="Sync with Recommend Turned on" alt="Sync with Recommend" width="45" height="45">';
+				echo '</div>';
+			} 
+			else
+			{ 
+				echo '<div class="rcmnd_product_sync_column_view_field">';
+					echo '<img src="https://cdn-icons-png.flaticon.com/512/169/169779.png" title="Sync with Recommend Turned off" alt="Sync with Recommend Turned off" width="45" height="45">';
+				echo '</div>';
+			} 
+		}  
+	}
+
+	
 	
 	/**
 	 * Recommend API POST REQUEST
@@ -569,8 +653,9 @@ class Rcmnd_referral_Admin {
 		
         $response_object = (object) ['httpCode' => 500, 'httpMessage' => ''];
 	
-		$url = 'https://api.recommend.co' . $route;
-		
+		//$url = 'https://api.recommend.co' . $route;
+		$url = 'https://rpd-api-dev.azurewebsites.net' . $route;
+
 		$args = array(
 			'method'      => $method,
 			'body'        => wp_json_encode( $body ),
@@ -598,9 +683,28 @@ class Rcmnd_referral_Admin {
 			if(isset($httpMessage->message)){
 				$response_object->httpMessage = $httpMessage->message;
 			}
+			
+			$response_object->httpBody = $httpMessage;
 		}
 			
 		return $response_object;
 	}
 	
+	
+	private function get_all_categories($categories, &$options, $prefix = '')
+	{
+		foreach ($categories as $category) {
+
+			if(!isset($category->parentId)){
+				$options[$category->id] = __( $prefix . strtoupper($category->name), 'rcmnd');
+			}
+			else{
+				 $options[$category->id] = __( $prefix . $category->name, 'rcmnd');
+			}
+
+			if (!empty($category->children)) {
+				$this->get_all_categories($category->children, $options, '-');
+			}
+		}
+	}	
 }
