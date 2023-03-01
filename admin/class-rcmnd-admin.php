@@ -389,11 +389,14 @@ class Rcmnd_referral_Admin {
 	public function rcmnd_product_update($product_id, $product){
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
-		$is_sync_on = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';		
-		$is_sync_on_mode = ($is_sync_on == 'on') ? true : false; 
+		//$is_sync_on = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';		
+		//$is_sync_on_mode = ($is_sync_on == 'on') ? true : false; 
+		
+		$is_sync_on = get_post_meta($product_id, '_rcmnd_product_sync', true);		
+		$is_sync_on_mode = ($is_sync_on == 'yes') ? true : false; 
 		
 		error_log("Product updated action triggered. Updating Recommend DB.");
-		
+
 		if($is_sync_on_mode)
 		{
 			$p_id = $product-> get_id();
@@ -404,9 +407,11 @@ class Rcmnd_referral_Admin {
 			$p_permalink = get_permalink( $product->get_id() );
 			$p_price = $product->get_price();
 			$p_stock_status = $product->get_stock_status();
-			$p_categories = $product->get_category_ids();
+			$p_category = get_post_meta($product_id,'_rcmnd_product_sync_category',true) === '' ? '0' : get_post_meta($product_id,'_rcmnd_product_sync_category',true);
 
 			error_log('Title => ' . $p_name);
+			error_log('$categoryId => ' . $p_category);
+			
 			/*error_log('Status => ' . $p_status);
 			error_log('apiToken => ' . $pkey);
 			error_log('$categoryId => ' . $categoryId);
@@ -432,6 +437,7 @@ class Rcmnd_referral_Admin {
 					'internalId' => $p_sku,
 					'title' => $p_name,
 					'categoryPath' => "woo integration",
+					'categoryId' => $p_category,
 					'price' => $p_price,
 					'url' => $p_permalink,
 					'image' => get_the_post_thumbnail_url($p_id),
@@ -488,8 +494,11 @@ class Rcmnd_referral_Admin {
 			while ( $loop->have_posts() ) : $loop->the_post();
 				error_log("-----NEW PRODUCT------");
 				global $product;
-
-				$p_id = $product-> get_id();
+			 	$p_id = $product-> get_id();
+			
+				$is_product_sync_on = get_post_meta($p_id, '_rcmnd_product_sync', true);		
+				$is_product_sync_on_mode = ($is_product_sync_on == 'yes') ? true : false;
+			
 				$p_status = $product->get_status();
 				$p_name = $product->get_name();
 				$p_description = $product->get_short_description();
@@ -497,9 +506,10 @@ class Rcmnd_referral_Admin {
 				$p_permalink = get_permalink( $product->get_id() );
 				$p_price = $product->get_price();
 				$p_stock_status = $product->get_stock_status();
-				$p_categories = $product->get_category_ids();
+				$p_category = get_post_meta($p_id,'_rcmnd_product_sync_category',true) === '' ? '0' : get_post_meta($p_id,'_rcmnd_product_sync_category',true);
 
-				error_log('Title => ' . $p_name);
+				error_log('Title => ' . $p_name);		
+			    error_log('$categoryId => ' . $p_category);
 				/*error_log('Status => ' . $p_status);
 				error_log('apiToken => ' . $pkey);
 				error_log('internalId => ' . $p_sku);
@@ -508,7 +518,7 @@ class Rcmnd_referral_Admin {
 				error_log('url => ' . $p_permalink);	
 				error_log('image => ' . get_the_post_thumbnail_url($p_id));*/
 
-				if($p_status === 'publish') 
+				if($p_status === 'publish' && $is_product_sync_on_mode) 
 				{
 					$pr_status = 0;
 					if($p_stock_status === 'outofstock') // outofstock or instock
@@ -524,6 +534,7 @@ class Rcmnd_referral_Admin {
 						'internalId' => $p_sku,
 						'title' => $p_name,
 						'categoryPath' => "woo integration",
+						'categoryId' => $p_category,
 						'price' => $p_price,
 						'url' => $p_permalink,
 						'image' => get_the_post_thumbnail_url($p_id),
@@ -582,7 +593,7 @@ class Rcmnd_referral_Admin {
 
 		
 		// Select list for categories
-		$response = $this->rcmnd_api_call('','/product-categories','GET');
+		$response = $this->rcmnd_api_call('','/product-categories/category-tree','GET');
 		$categories = $response->{'httpBody'};
 
 		$options[''] = __( 'Select a Recommend Category...', 'rcmnd'); // default value
@@ -706,5 +717,6 @@ class Rcmnd_referral_Admin {
 				$this->get_all_categories($category->children, $options, '-');
 			}
 		}
-	}	
+	}
+	
 }
