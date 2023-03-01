@@ -101,12 +101,15 @@ class Rcmnd_referral_Public {
 		
 		$order_total = '0';		
 		$order_currency = '';
+		$cookieValue = '';
+		$cookieValueUUID = '';
 		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
-		}	
-		else{
-			$cookieValue = '';
+		}
+		
+		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
+			$cookieValueUUID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
 		}
 
 		$gso_options = get_option( 'rcmnd_gso' );
@@ -114,6 +117,7 @@ class Rcmnd_referral_Public {
 		
 		$body = array(
 			'apiToken' => $pkey,
+			'uuid' => $cookieValueUUID,
 			'code' => $cookieValue,
 			'cartTotal' => sanitize_text_field($order_total)  . ' ' . sanitize_text_field($order_currency),
 			'orderNumber' => 'Testing mode'
@@ -151,6 +155,8 @@ class Rcmnd_referral_Public {
 
 		$order_total = '0';		
 		$order_currency = '';
+		$cookieValue = '';
+		$cookieValueUUID = '';
 					
 		if( isset ($data['billing']['email'])){
 			$billing_email = sanitize_text_field($data['billing']['email']);
@@ -171,7 +177,11 @@ class Rcmnd_referral_Public {
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
-			
+		
+		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
+			$cookieValueUUID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
+		}
+	
 		//error_log($cookieValue);
 
 		unset($_SESSION["rcmnd_cookie_paid"]);
@@ -188,6 +198,7 @@ class Rcmnd_referral_Public {
 			
 			$body = array(
 				'apiToken' => $pkey,
+				'uuid' => $cookieValueUUID,
 				'code' => $cookieValue,
 				'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
 				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT),
@@ -197,7 +208,6 @@ class Rcmnd_referral_Public {
 		
 			$response = $this->rcmnd_api_call($body, '/apikeys');
 			
-		
 			$responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
 			$responseConvesionId = $response->{'conversionId'};
@@ -530,8 +540,10 @@ class Rcmnd_referral_Public {
 					
 		$response_object = (object) ['httpCode' => 500, 'conversionId' => 0, 'httpMessage' => ''];
 	
-		$url = 'https://api.recommend.co' . $route;
+		//$url = 'https://api.recommend.co' . $route;
+		$url = 'https://rpd-api-stage.azurewebsites.net' . $route;
 
+		
 		$args = array(
 			'method'      => $method,
 			'body'        => wp_json_encode( $body ),
@@ -577,6 +589,7 @@ class Rcmnd_referral_Public {
 	public function set_rcmndID_cookie() {
         
         $parameterRcmndID = '';
+		$parameterSSNID = '';
         
         if (isset($_GET['RcmndRef'])){
             $parameterRcmndID = sanitize_text_field($_GET['RcmndRef']);
@@ -597,11 +610,21 @@ class Rcmnd_referral_Public {
         if (isset($_GET['rcmndref'])){
 			$parameterRcmndID = sanitize_text_field($_GET['rcmndref']);       
         }
+		
+        if (isset($_GET['ssnid'])){
+			$parameterSSNID = sanitize_text_field($_GET['ssnid']);       
+        }
 
         if($parameterRcmndID != '')
         {            
             $_SESSION["rcmnd_cookie"] = sanitize_text_field($parameterRcmndID);
         }
+		
+		if($parameterSSNID != '')
+        {            
+            $_SESSION["rcmnd_cookie_ssnid"] = sanitize_text_field($parameterRcmndID);
+        }
+		
     }
 
 }
