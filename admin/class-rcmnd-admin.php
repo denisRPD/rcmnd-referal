@@ -641,13 +641,13 @@ class Rcmnd_referral_Admin {
 			if($get_rcmnd_product_sync == 'yes')
 			{ 
 				echo '<div class="rcmnd_product_sync_column_view_field">';
-					echo '<img src="https://static.vecteezy.com/system/resources/previews/002/743/514/original/green-check-mark-icon-in-a-circle-free-vector.jpg" title="Sync with Recommend Turned on" alt="Sync with Recommend" width="45" height="45">';
+					echo '<img src="' . plugin_dir_url(dirname( __FILE__ )) . 'images/rcmnd-icon-sync-on.svg"' . 'title="Sync with Recommend Turned on" alt="Sync with Recommend" width="20" height="20">';
 				echo '</div>';
 			} 
 			else
 			{ 
 				echo '<div class="rcmnd_product_sync_column_view_field">';
-					echo '<img src="https://cdn-icons-png.flaticon.com/512/169/169779.png" title="Sync with Recommend Turned off" alt="Sync with Recommend Turned off" width="45" height="45">';
+					echo '<img src="' . plugin_dir_url(dirname( __FILE__ )) . 'images/rcmnd-icon-sync-off.svg"' . 'title="Sync with Recommend Turned off" alt="Sync with Recommend" width="20" height="20">';
 				echo '</div>';
 			} 
 		}  
