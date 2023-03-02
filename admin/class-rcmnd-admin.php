@@ -412,15 +412,6 @@ class Rcmnd_referral_Admin {
 			error_log('Title => ' . $p_name);
 			error_log('$categoryId => ' . $p_category);
 			
-			/*error_log('Status => ' . $p_status);
-			error_log('apiToken => ' . $pkey);
-			error_log('$categoryId => ' . $categoryId);
-			error_log('internalId => ' . $p_sku);
-			error_log('price => ' . $p_price);
-			error_log('description => ' . ($p_description === '') ? "" : $p_description);
-			error_log('url => ' . $p_permalink);	
-			error_log('image => ' . get_the_post_thumbnail_url($p_id));*/
-
 			if($p_status === 'publish') 
 			{
 				$pr_status = 0;
@@ -593,7 +584,7 @@ class Rcmnd_referral_Admin {
 
 		
 		// Select list for categories
-		$response = $this->rcmnd_api_call('','/product-categories/category-tree','GET');
+		$response = $this->rcmnd_api_call('','/product-categories','GET');
 		$categories = $response->{'httpBody'};
 
 		$options[''] = __( 'Select a Recommend Category...', 'rcmnd'); // default value
@@ -653,7 +644,7 @@ class Rcmnd_referral_Admin {
 		}  
 	}
 
-	
+		
 	
 	/**
 	 * Recommend API POST REQUEST
@@ -707,14 +698,14 @@ class Rcmnd_referral_Admin {
 		foreach ($categories as $category) {
 
 			if(!isset($category->parentId)){
-				$options[$category->id] = __( $prefix . strtoupper($category->name), 'rcmnd');
+				$options[$category->id] = __( $prefix . $category->mpath . ' ' . strtoupper($category->name), 'rcmnd');
 			}
 			else{
-				 $options[$category->id] = __( $prefix . $category->name, 'rcmnd');
+				 $options[$category->id] = __( '	' . $category->mpath . ' ' . $category->name, 'rcmnd');
 			}
 
 			if (!empty($category->children)) {
-				$this->get_all_categories($category->children, $options, '-');
+				$this->get_all_categories($category->children, $options, '');
 			}
 		}
 	}
