@@ -297,12 +297,15 @@ class Rcmnd_referral_Public {
 	 * @since    1.1
 	 */
 	public function rcmnd_after_add_to_cart_notice(){
-				
+		$cookieValue = '';
+		$cookieValueUUID = '';
+		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
-		else{
-			$cookieValue = '';
+
+		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
+			$cookieValueUUID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
 		}
 
 		$aso_options = get_option( 'rcmnd_aso' );
@@ -311,7 +314,7 @@ class Rcmnd_referral_Public {
 		if($cookieValue != '' && $opt2 != '')
 		{   
 			echo '
-			<div class="rcmndref-tag-parent-cart" style="width:100%;" title="' . esc_html($cookieValue) . '">
+			<div class="rcmndref-tag-parent-cart" style="width:100%;" title="' . esc_html($cookieValue) . '$' . esc_html($cookieValueUUID) . '">
 				<div style="float:left;width:10%;">
 					<a target="_blank" href="https://recommend.co">
 						<img style="margin: 1.4em 0;max-width:35px;width:100%;" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'">
@@ -467,7 +470,6 @@ class Rcmnd_referral_Public {
 			
 			error_log($responseCode);
 
-			
 			if ($responseCode === 200) 
 			{
 				error_log('RCMND: Conversion Approved.');
@@ -590,7 +592,7 @@ class Rcmnd_referral_Public {
         
         $parameterRcmndID = '';
 		$parameterSSNID = '';
-        
+		        
         if (isset($_GET['RcmndRef'])){
             $parameterRcmndID = sanitize_text_field($_GET['RcmndRef']);
         }
@@ -622,9 +624,8 @@ class Rcmnd_referral_Public {
 		
 		if($parameterSSNID != '')
         {            
-            $_SESSION["rcmnd_cookie_ssnid"] = sanitize_text_field($parameterRcmndID);
+            $_SESSION["rcmnd_cookie_ssnid"] = sanitize_text_field($parameterSSNID);
         }
-		
     }
 
 }
