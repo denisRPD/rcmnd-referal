@@ -395,7 +395,7 @@ class Rcmnd_referral_Admin {
 		$is_sync_on = get_post_meta($product_id, '_rcmnd_product_sync', true);		
 		$is_sync_on_mode = ($is_sync_on == 'yes') ? true : false; 
 		
-		error_log("Product updated action triggered. Updating Recommend DB.");
+		//error_log("Product updated action triggered. Updating Recommend DB.");
 
 		if($is_sync_on_mode)
 		{
@@ -409,8 +409,8 @@ class Rcmnd_referral_Admin {
 			$p_stock_status = $product->get_stock_status();
 			$p_category = get_post_meta($product_id,'_rcmnd_product_sync_category',true) === '' ? '0' : get_post_meta($product_id,'_rcmnd_product_sync_category',true);
 
-			error_log('Title => ' . $p_name);
-			error_log('$categoryId => ' . $p_category);
+			//error_log('Title => ' . $p_name);
+			//error_log('$categoryId => ' . $p_category);
 			
 			if($p_status === 'publish') 
 			{
@@ -420,8 +420,8 @@ class Rcmnd_referral_Admin {
 					$pr_status = -2;
 				}
 
-				error_log('status => ' . $pr_status);
-				error_log("-----SENDING TO RECOMMEND------");
+				//error_log('status => ' . $pr_status);
+				//error_log("-----SENDING TO RECOMMEND------");
 
 				$body = array(
 					'apiToken' => $pkey,
@@ -442,18 +442,18 @@ class Rcmnd_referral_Admin {
 				$responseCode = $response->{'httpCode'};
 				$responseMessage = $response->{'httpMessage'};
 
-				error_log($responseCode);
-				error_log($responseMessage);
+				//error_log($responseCode);
+				//error_log($responseMessage);
 
 				if ( $responseCode != 200 ) {
-					error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
+					//error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
 					//$this->admin_sync_error_notice();
 				}
 			}
 		}
 		else
 		{
-			error_log("Sync mode is off - skipping.");
+			//error_log("Sync mode is off - skipping.");
 		}
 	}
 	
@@ -469,12 +469,12 @@ class Rcmnd_referral_Admin {
 		$is_sync_on = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';		
 		$is_sync_on_mode = ($is_sync_on == 'on') ? true : false; 
 		
-		error_log("Trying to sync products on settings update...");
+		//error_log("Trying to sync products on settings update...");
 
 		if($is_sync_on_mode)
 		{
 			// SYNC MODE ON - NEED TO PROCESS PRODUCTS
-			error_log("Starting with products loop");
+			//error_log("Starting with products loop");
 
 			$args = array(
 				'post_type'      => 'product'
@@ -499,8 +499,8 @@ class Rcmnd_referral_Admin {
 				$p_stock_status = $product->get_stock_status();
 				$p_category = get_post_meta($p_id,'_rcmnd_product_sync_category',true) === '' ? '0' : get_post_meta($p_id,'_rcmnd_product_sync_category',true);
 
-				error_log('Title => ' . $p_name);		
-			    error_log('$categoryId => ' . $p_category);
+				//error_log('Title => ' . $p_name);		
+			    	//error_log('$categoryId => ' . $p_category);
 				/*error_log('Status => ' . $p_status);
 				error_log('apiToken => ' . $pkey);
 				error_log('internalId => ' . $p_sku);
@@ -516,9 +516,9 @@ class Rcmnd_referral_Admin {
 					{
 						$pr_status = -2;
 					}
-					error_log('status => ' . $pr_status);
+					//error_log('status => ' . $pr_status);
 
-					error_log("-----SENDING TO RECOMMEND------");
+					//error_log("-----SENDING TO RECOMMEND------");
 
 					$body = array(
 						'apiToken' => $pkey,
@@ -539,25 +539,25 @@ class Rcmnd_referral_Admin {
 					$responseCode = $response->{'httpCode'};
 					$responseMessage = $response->{'httpMessage'};
 
-					error_log($responseCode);
-					error_log($responseMessage);
+					//error_log($responseCode);
+					//error_log($responseMessage);
 
 
 					if ( $responseCode != 200 ) {
-						error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
+						//error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
 					}
 				}
 
 			endwhile;
 			wp_reset_query();
 
-			error_log("Ending with products loop");
+			//error_log("Ending with products loop");
 
 			$this->admin_sync_notice();
 		}
 		else
 		{
-			error_log("Sync mode is off - skipping.");
+			//error_log("Sync mode is off - skipping.");
 		}
 	}
 	
@@ -655,8 +655,8 @@ class Rcmnd_referral_Admin {
 		
         $response_object = (object) ['httpCode' => 500, 'httpMessage' => ''];
 	
-		//$url = 'https://api.recommend.co' . $route;
-		$url = 'https://rpd-api-dev.azurewebsites.net' . $route;
+		$url = 'https://api.recommend.co' . $route;
+		//$url = 'https://rpd-api-dev.azurewebsites.net' . $route;
 
 		$args = array(
 			'method'      => $method,
