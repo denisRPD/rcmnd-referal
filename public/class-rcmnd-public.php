@@ -183,7 +183,7 @@ class Rcmnd_referral_Public {
 		}
 	
 	
-		//error_log($cookieValue);
+		error_log("SSNID: " . $cookieValueSSNID);
 
 		unset($_SESSION["rcmnd_cookie_paid"]);
 
@@ -198,7 +198,7 @@ class Rcmnd_referral_Public {
 
 			$body = array(
 				'apiToken' => $pkey,
-				'ssnid' => $cookieValueUID,
+				'ssnid' => $cookieValueSSNID,
 				'code' => $cookieValue,
 				'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
 				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT),
@@ -631,8 +631,6 @@ class Rcmnd_referral_Public {
 		if($parameterSSNID != '')
         {            
             $_SESSION["rcmnd_cookie_ssnid"] = sanitize_text_field($parameterSSNID);
-        }
-		
+        }	
     }
-
 }
