@@ -101,19 +101,23 @@ class Rcmnd_referral_Public {
 		
 		$order_total = '0';		
 		$order_currency = '';
+		$cookieValue = '';
+		$cookieValueSSNID = '';
 		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
-		}	
-		else{
-			$cookieValue = '';
 		}
-
+		
+		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
+			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
+		}
+		
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
 		
 		$body = array(
 			'apiToken' => $pkey,
+			'ssnid' => $cookieValueSSNID,
 			'code' => $cookieValue,
 			'cartTotal' => sanitize_text_field($order_total)  . ' ' . sanitize_text_field($order_currency),
 			'orderNumber' => 'Testing mode'
@@ -151,6 +155,8 @@ class Rcmnd_referral_Public {
 
 		$order_total = '0';		
 		$order_currency = '';
+		$cookieValue = '';
+		$cookieValueSSNID = '';
 					
 		if( isset ($data['billing']['email'])){
 			$billing_email = sanitize_text_field($data['billing']['email']);
@@ -171,23 +177,28 @@ class Rcmnd_referral_Public {
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
-			
-		//error_log($cookieValue);
+		
+		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
+			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
+		}
+	
+	
+		//error_log("SSNID: " . $cookieValueSSNID);
 
 		unset($_SESSION["rcmnd_cookie_paid"]);
 
 		if(isset ($_SESSION["rcmnd_cookie"]) && isset($cookieValue))
 		{
-			error_log("Getting inside request");
+			//error_log("Getting inside request");
 
 			$gso_options = get_option( 'rcmnd_gso' );
 			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';					
 		
 			//error_log($pkey);
 
-			
 			$body = array(
 				'apiToken' => $pkey,
+				'ssnid' => $cookieValueSSNID,
 				'code' => $cookieValue,
 				'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
 				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT),
@@ -197,14 +208,13 @@ class Rcmnd_referral_Public {
 		
 			$response = $this->rcmnd_api_call($body, '/apikeys');
 			
-		
 			$responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
 			$responseConvesionId = $response->{'conversionId'};
 			
-			error_log($responseCode);
-			error_log($responseMessage);
-			error_log($responseConvesionId);
+			//error_log($responseCode);
+			//error_log($responseMessage);
+			//error_log($responseConvesionId);
 
 			
 			if ($responseCode === 200) 
@@ -287,12 +297,20 @@ class Rcmnd_referral_Public {
 	 * @since    1.1
 	 */
 	public function rcmnd_after_add_to_cart_notice(){
-				
+		$cookieValue = '';
+		$cookieValueUID = '';
+		$cookieValueSSNID = '';
+		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
-		else{
-			$cookieValue = '';
+
+		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
+			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
+		}
+		
+		if( isset ($_SESSION["rcmnd_cookie_uid"])){
+			$cookieValueUID = sanitize_text_field($_SESSION["rcmnd_cookie_uid"]);
 		}
 
 		$aso_options = get_option( 'rcmnd_aso' );
@@ -301,7 +319,7 @@ class Rcmnd_referral_Public {
 		if($cookieValue != '' && $opt2 != '')
 		{   
 			echo '
-			<div class="rcmndref-tag-parent-cart" style="width:100%;" title="' . esc_html($cookieValue) . '">
+			<div class="rcmndref-tag-parent-cart" style="width:100%;" title="' . esc_html($cookieValue) . '$' . esc_html($cookieValueSSNID) . '">
 				<div style="float:left;width:10%;">
 					<a target="_blank" href="https://recommend.co">
 						<img style="margin: 1.4em 0;max-width:35px;width:100%;" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'">
@@ -425,7 +443,7 @@ class Rcmnd_referral_Public {
 	}
 	
 	public function triggered_rcmnd_order_approve_action( $order ){
-		error_log("RCMND: User click on approve conversion for order...");
+		//error_log("RCMND: User click on approve conversion for order...");
 		
 		$order_key = $order->get_order_number(); // The Order key
 	
@@ -439,11 +457,11 @@ class Rcmnd_referral_Public {
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';				
 		
-		error_log("RCMND: ConversionId = " . $rcmnd_conversionId);
+		//error_log("RCMND: ConversionId = " . $rcmnd_conversionId);
 		
 		if($rcmnd_conversionId != '')
 		{		
-			error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to approve conversion with id = ' . $rcmnd_conversionId);
+			//error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to approve conversion with id = ' . $rcmnd_conversionId);
 
 			$body = array(
 				'apiKey' => $pkey,
@@ -455,12 +473,12 @@ class Rcmnd_referral_Public {
             $responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
 			
-			error_log($responseCode);
+			//error_log($responseCode);
 
 			
 			if ($responseCode === 200) 
 			{
-				error_log('RCMND: Conversion Approved.');
+				//error_log('RCMND: Conversion Approved.');
 			}
 			else
 			{
@@ -474,7 +492,7 @@ class Rcmnd_referral_Public {
 	}
 	
 	public function triggered_rcmnd_order_reject_action( $order ){
-		error_log("RCMND: User click on reject conversion for order...");
+		//error_log("RCMND: User click on reject conversion for order...");
 		
 		$order_key = $order->get_order_number(); // The Order key
 	
@@ -488,11 +506,11 @@ class Rcmnd_referral_Public {
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';				
 		
-		error_log("RCMND: ConversionId = " . $rcmnd_conversionId);
+		e//rror_log("RCMND: ConversionId = " . $rcmnd_conversionId);
 		
 		if($rcmnd_conversionId != '')
 		{		
-			error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to reject conversion with id = ' . $rcmnd_conversionId);
+			//error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to reject conversion with id = ' . $rcmnd_conversionId);
 
 			$body = array(
 				'apiKey' => $pkey,
@@ -504,11 +522,11 @@ class Rcmnd_referral_Public {
             $responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
 			
-			error_log($responseCode);
+			//error_log($responseCode);
 
 			if ($responseCode === 200) 
 			{
-				error_log('RCMND: Conversion Rejected.');
+				//error_log('RCMND: Conversion Rejected.');
 			}
 			else
 			{
@@ -531,7 +549,9 @@ class Rcmnd_referral_Public {
 		$response_object = (object) ['httpCode' => 500, 'conversionId' => 0, 'httpMessage' => ''];
 	
 		$url = 'https://api.recommend.co' . $route;
+		//$url = 'https://rpd-api-stage.azurewebsites.net' . $route;
 
+		
 		$args = array(
 			'method'      => $method,
 			'body'        => wp_json_encode( $body ),
@@ -577,7 +597,8 @@ class Rcmnd_referral_Public {
 	public function set_rcmndID_cookie() {
         
         $parameterRcmndID = '';
-        
+	$parameterSSNID = '';
+		        
         if (isset($_GET['RcmndRef'])){
             $parameterRcmndID = sanitize_text_field($_GET['RcmndRef']);
         }
@@ -597,11 +618,19 @@ class Rcmnd_referral_Public {
         if (isset($_GET['rcmndref'])){
 			$parameterRcmndID = sanitize_text_field($_GET['rcmndref']);       
         }
+		
+        if (isset($_GET['ssnid'])){
+			$parameterSSNID = sanitize_text_field($_GET['ssnid']);       
+        }
 
         if($parameterRcmndID != '')
         {            
             $_SESSION["rcmnd_cookie"] = sanitize_text_field($parameterRcmndID);
         }
+		
+	if($parameterSSNID != '')
+        {            
+            $_SESSION["rcmnd_cookie_ssnid"] = sanitize_text_field($parameterSSNID);
+        }	
     }
-
 }

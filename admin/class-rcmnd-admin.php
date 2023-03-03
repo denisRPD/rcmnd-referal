@@ -389,11 +389,14 @@ class Rcmnd_referral_Admin {
 	public function rcmnd_product_update($product_id, $product){
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
-		$is_sync_on = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';		
-		$is_sync_on_mode = ($is_sync_on == 'on') ? true : false; 
+		//$is_sync_on = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';		
+		//$is_sync_on_mode = ($is_sync_on == 'on') ? true : false; 
 		
-		error_log("Product updated action triggered. Updating Recommend DB.");
+		$is_sync_on = get_post_meta($product_id, '_rcmnd_product_sync', true);		
+		$is_sync_on_mode = ($is_sync_on == 'yes') ? true : false; 
 		
+		//error_log("Product updated action triggered. Updating Recommend DB.");
+
 		if($is_sync_on_mode)
 		{
 			$p_id = $product-> get_id();
@@ -404,18 +407,11 @@ class Rcmnd_referral_Admin {
 			$p_permalink = get_permalink( $product->get_id() );
 			$p_price = $product->get_price();
 			$p_stock_status = $product->get_stock_status();
-			$p_categories = $product->get_category_ids();
+			$p_category = get_post_meta($product_id,'_rcmnd_product_sync_category',true) === '' ? '0' : get_post_meta($product_id,'_rcmnd_product_sync_category',true);
 
-			error_log('Title => ' . $p_name);
-			/*error_log('Status => ' . $p_status);
-			error_log('apiToken => ' . $pkey);
-			error_log('$categoryId => ' . $categoryId);
-			error_log('internalId => ' . $p_sku);
-			error_log('price => ' . $p_price);
-			error_log('description => ' . ($p_description === '') ? "" : $p_description);
-			error_log('url => ' . $p_permalink);	
-			error_log('image => ' . get_the_post_thumbnail_url($p_id));*/
-
+			//error_log('Title => ' . $p_name);
+			//error_log('$categoryId => ' . $p_category);
+			
 			if($p_status === 'publish') 
 			{
 				$pr_status = 0;
@@ -424,14 +420,15 @@ class Rcmnd_referral_Admin {
 					$pr_status = -2;
 				}
 
-				error_log('status => ' . $pr_status);
-				error_log("-----SENDING TO RECOMMEND------");
+				//error_log('status => ' . $pr_status);
+				//error_log("-----SENDING TO RECOMMEND------");
 
 				$body = array(
 					'apiToken' => $pkey,
 					'internalId' => $p_sku,
 					'title' => $p_name,
 					'categoryPath' => "woo integration",
+					'categoryId' => $p_category,
 					'price' => $p_price,
 					'url' => $p_permalink,
 					'image' => get_the_post_thumbnail_url($p_id),
@@ -445,18 +442,18 @@ class Rcmnd_referral_Admin {
 				$responseCode = $response->{'httpCode'};
 				$responseMessage = $response->{'httpMessage'};
 
-				error_log($responseCode);
-				error_log($responseMessage);
+				//error_log($responseCode);
+				//error_log($responseMessage);
 
 				if ( $responseCode != 200 ) {
-					error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
+					//error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
 					//$this->admin_sync_error_notice();
 				}
 			}
 		}
 		else
 		{
-			error_log("Sync mode is off - skipping.");
+			//error_log("Sync mode is off - skipping.");
 		}
 	}
 	
@@ -472,12 +469,12 @@ class Rcmnd_referral_Admin {
 		$is_sync_on = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';		
 		$is_sync_on_mode = ($is_sync_on == 'on') ? true : false; 
 		
-		error_log("Trying to sync products on settings update...");
+		//error_log("Trying to sync products on settings update...");
 
 		if($is_sync_on_mode)
 		{
 			// SYNC MODE ON - NEED TO PROCESS PRODUCTS
-			error_log("Starting with products loop");
+			//error_log("Starting with products loop");
 
 			$args = array(
 				'post_type'      => 'product'
@@ -488,8 +485,11 @@ class Rcmnd_referral_Admin {
 			while ( $loop->have_posts() ) : $loop->the_post();
 				error_log("-----NEW PRODUCT------");
 				global $product;
-
-				$p_id = $product-> get_id();
+			 	$p_id = $product-> get_id();
+			
+				$is_product_sync_on = get_post_meta($p_id, '_rcmnd_product_sync', true);		
+				$is_product_sync_on_mode = ($is_product_sync_on == 'yes') ? true : false;
+			
 				$p_status = $product->get_status();
 				$p_name = $product->get_name();
 				$p_description = $product->get_short_description();
@@ -497,9 +497,10 @@ class Rcmnd_referral_Admin {
 				$p_permalink = get_permalink( $product->get_id() );
 				$p_price = $product->get_price();
 				$p_stock_status = $product->get_stock_status();
-				$p_categories = $product->get_category_ids();
+				$p_category = get_post_meta($p_id,'_rcmnd_product_sync_category',true) === '' ? '0' : get_post_meta($p_id,'_rcmnd_product_sync_category',true);
 
-				error_log('Title => ' . $p_name);
+				//error_log('Title => ' . $p_name);		
+			    	//error_log('$categoryId => ' . $p_category);
 				/*error_log('Status => ' . $p_status);
 				error_log('apiToken => ' . $pkey);
 				error_log('internalId => ' . $p_sku);
@@ -508,22 +509,23 @@ class Rcmnd_referral_Admin {
 				error_log('url => ' . $p_permalink);	
 				error_log('image => ' . get_the_post_thumbnail_url($p_id));*/
 
-				if($p_status === 'publish') 
+				if($p_status === 'publish' && $is_product_sync_on_mode) 
 				{
 					$pr_status = 0;
 					if($p_stock_status === 'outofstock') // outofstock or instock
 					{
 						$pr_status = -2;
 					}
-					error_log('status => ' . $pr_status);
+					//error_log('status => ' . $pr_status);
 
-					error_log("-----SENDING TO RECOMMEND------");
+					//error_log("-----SENDING TO RECOMMEND------");
 
 					$body = array(
 						'apiToken' => $pkey,
 						'internalId' => $p_sku,
 						'title' => $p_name,
 						'categoryPath' => "woo integration",
+						'categoryId' => $p_category,
 						'price' => $p_price,
 						'url' => $p_permalink,
 						'image' => get_the_post_thumbnail_url($p_id),
@@ -537,28 +539,112 @@ class Rcmnd_referral_Admin {
 					$responseCode = $response->{'httpCode'};
 					$responseMessage = $response->{'httpMessage'};
 
-					error_log($responseCode);
-					error_log($responseMessage);
+					//error_log($responseCode);
+					//error_log($responseMessage);
 
 
 					if ( $responseCode != 200 ) {
-						error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
+						//error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
 					}
 				}
 
 			endwhile;
 			wp_reset_query();
 
-			error_log("Ending with products loop");
+			//error_log("Ending with products loop");
 
 			$this->admin_sync_notice();
 		}
 		else
 		{
-			error_log("Sync mode is off - skipping.");
+			//error_log("Sync mode is off - skipping.");
 		}
 	}
 	
+	/**
+	 * Recommend Sync Options in Product Page
+	 *
+	 * @since    1.3.8
+	 */
+	public function rcmnd_product_custom_fields_add()
+	{
+		global $post;
+
+		echo '<div class="rcmnd_product_sync_field">';
+
+		// Checkbox for turning on or off sync
+		woocommerce_wp_checkbox( array(
+			'id'        => '_rcmnd_product_sync',
+			'description'      => __('Turn on Syncronization with Recommend.', 'rcmnd'),
+			'label'     => __('Sync with Recommend', 'rcmnd'),
+			'desc_tip'  => 'true'
+		));
+
+		echo '</div>';
+
+		
+		// Select list for categories
+		$response = $this->rcmnd_api_call('','/product-categories','GET');
+		$categories = $response->{'httpBody'};
+
+		$options[''] = __( 'Select a Recommend Category...', 'rcmnd'); // default value
+		$this->get_all_categories($categories, $options,'');
+
+		$value = get_post_meta($post->ID,'_rcmnd_product_sync_category',true);
+
+		echo '<div class="rcmnd_product_sync_field">';
+		woocommerce_wp_select( array(
+			'id'        => '_rcmnd_product_sync_category',
+			'description'  => __('Recommend Category selection', 'rcmnd'),
+			'label'     => __('Recommend Category', 'rcmnd'),
+			'desc_tip'  => 'true',
+			'options' =>  $options,
+			'value'   => $value,
+		));
+		echo '</div>';
+	}
+
+	public function product_custom_fields_rcmnd_sync_option($post_id)
+	{
+		// Sync Option turn on or off option save
+		$rcmnd_product_sync = isset( $_POST['_rcmnd_product_sync'] ) ? 'yes' : 'no';
+			update_post_meta($post_id, '_rcmnd_product_sync', esc_attr( $rcmnd_product_sync ));
+		
+		// Sync Option category option save
+		$rcmnd_product_sync_category = isset( $_POST['_rcmnd_product_sync_category'] ) ? $_POST['_rcmnd_product_sync_category'] : '';
+        	update_post_meta($post_id, '_rcmnd_product_sync_category', esc_attr( $rcmnd_product_sync_category ));
+	}
+	
+	public function rcmnd_set_custom_columns($columns) 
+	{
+		$columns['_rcmnd_product_sync'] = __('Recommend Sync', 'rcmnd'); // Sync product on/off
+
+		return $columns;
+	}
+	
+	// Show custom field in a new column in list view
+	public function rcmnd_custom_column( $column, $post_id ) {
+
+		if($column == '_rcmnd_product_sync')
+		{ 
+			$get_rcmnd_product_sync = get_post_meta($post_id,'_rcmnd_product_sync',true);
+
+			if($get_rcmnd_product_sync == 'yes')
+			{ 
+				echo '<div class="rcmnd_product_sync_column_view_field">';
+					echo '<img src="' . plugin_dir_url(dirname( __FILE__ )) . 'images/rcmnd-icon-sync-on.svg"' . 'title="Sync with Recommend Turned on" alt="Sync with Recommend" width="20" height="20">';
+				echo '</div>';
+			} 
+			else
+			{ 
+				echo '<div class="rcmnd_product_sync_column_view_field">';
+					echo '<img src="' . plugin_dir_url(dirname( __FILE__ )) . 'images/rcmnd-icon-sync-off.svg"' . 'title="Sync with Recommend Turned off" alt="Sync with Recommend" width="20" height="20">';
+				echo '</div>';
+			} 
+		}  
+	}
+
+		
 	
 	/**
 	 * Recommend API POST REQUEST
@@ -570,7 +656,8 @@ class Rcmnd_referral_Admin {
         $response_object = (object) ['httpCode' => 500, 'httpMessage' => ''];
 	
 		$url = 'https://api.recommend.co' . $route;
-		
+		//$url = 'https://rpd-api-dev.azurewebsites.net' . $route;
+
 		$args = array(
 			'method'      => $method,
 			'body'        => wp_json_encode( $body ),
@@ -598,9 +685,29 @@ class Rcmnd_referral_Admin {
 			if(isset($httpMessage->message)){
 				$response_object->httpMessage = $httpMessage->message;
 			}
+			
+			$response_object->httpBody = $httpMessage;
 		}
 			
 		return $response_object;
+	}
+	
+	
+	private function get_all_categories($categories, &$options, $prefix = '')
+	{
+		foreach ($categories as $category) {
+
+			if(!isset($category->parentId)){
+				$options[$category->id] = __( $prefix . $category->mpath . ' ' . strtoupper($category->name), 'rcmnd');
+			}
+			else{
+				 $options[$category->id] = __( '	' . $category->mpath . ' ' . $category->name, 'rcmnd');
+			}
+
+			if (!empty($category->children)) {
+				$this->get_all_categories($category->children, $options, '');
+			}
+		}
 	}
 	
 }
