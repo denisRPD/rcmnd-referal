@@ -102,22 +102,22 @@ class Rcmnd_referral_Public {
 		$order_total = '0';		
 		$order_currency = '';
 		$cookieValue = '';
-		$cookieValueUUID = '';
+		$cookieValueSSNID = '';
 		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
 		
 		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
-			$cookieValueUUID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
+			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
 		}
-
+		
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
 		
 		$body = array(
 			'apiToken' => $pkey,
-			'uuid' => $cookieValueUUID,
+			'ssnid' => $cookieValueSSNID,
 			'code' => $cookieValue,
 			'cartTotal' => sanitize_text_field($order_total)  . ' ' . sanitize_text_field($order_currency),
 			'orderNumber' => 'Testing mode'
@@ -156,7 +156,7 @@ class Rcmnd_referral_Public {
 		$order_total = '0';		
 		$order_currency = '';
 		$cookieValue = '';
-		$cookieValueUUID = '';
+		$cookieValueSSNID = '';
 					
 		if( isset ($data['billing']['email'])){
 			$billing_email = sanitize_text_field($data['billing']['email']);
@@ -179,8 +179,9 @@ class Rcmnd_referral_Public {
 		}
 		
 		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
-			$cookieValueUUID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
+			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
 		}
+	
 	
 		//error_log($cookieValue);
 
@@ -195,10 +196,9 @@ class Rcmnd_referral_Public {
 		
 			//error_log($pkey);
 
-			
 			$body = array(
 				'apiToken' => $pkey,
-				'uuid' => $cookieValueUUID,
+				'ssnid' => $cookieValueUID,
 				'code' => $cookieValue,
 				'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
 				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT),
@@ -298,14 +298,19 @@ class Rcmnd_referral_Public {
 	 */
 	public function rcmnd_after_add_to_cart_notice(){
 		$cookieValue = '';
-		$cookieValueUUID = '';
+		$cookieValueUID = '';
+		$cookieValueSSNID = '';
 		
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
 
 		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
-			$cookieValueUUID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
+			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
+		}
+		
+		if( isset ($_SESSION["rcmnd_cookie_uid"])){
+			$cookieValueUID = sanitize_text_field($_SESSION["rcmnd_cookie_uid"]);
 		}
 
 		$aso_options = get_option( 'rcmnd_aso' );
@@ -314,7 +319,7 @@ class Rcmnd_referral_Public {
 		if($cookieValue != '' && $opt2 != '')
 		{   
 			echo '
-			<div class="rcmndref-tag-parent-cart" style="width:100%;" title="' . esc_html($cookieValue) . '$' . esc_html($cookieValueUUID) . '">
+			<div class="rcmndref-tag-parent-cart" style="width:100%;" title="' . esc_html($cookieValue) . '$' . esc_html($cookieValueSSNID) . '">
 				<div style="float:left;width:10%;">
 					<a target="_blank" href="https://recommend.co">
 						<img style="margin: 1.4em 0;max-width:35px;width:100%;" src="' . esc_html(plugin_dir_url( __DIR__ ) . 'images/rcmnd-logo.png') .'">
@@ -470,6 +475,7 @@ class Rcmnd_referral_Public {
 			
 			error_log($responseCode);
 
+			
 			if ($responseCode === 200) 
 			{
 				error_log('RCMND: Conversion Approved.');
@@ -626,6 +632,7 @@ class Rcmnd_referral_Public {
         {            
             $_SESSION["rcmnd_cookie_ssnid"] = sanitize_text_field($parameterSSNID);
         }
+		
     }
 
 }
