@@ -183,13 +183,13 @@ class Rcmnd_referral_Public {
 		}
 	
 	
-		error_log("SSNID: " . $cookieValueSSNID);
+		//error_log("SSNID: " . $cookieValueSSNID);
 
 		unset($_SESSION["rcmnd_cookie_paid"]);
 
 		if(isset ($_SESSION["rcmnd_cookie"]) && isset($cookieValue))
 		{
-			error_log("Getting inside request");
+			//error_log("Getting inside request");
 
 			$gso_options = get_option( 'rcmnd_gso' );
 			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';					
@@ -212,9 +212,9 @@ class Rcmnd_referral_Public {
 			$responseMessage = $response->{'httpMessage'};
 			$responseConvesionId = $response->{'conversionId'};
 			
-			error_log($responseCode);
-			error_log($responseMessage);
-			error_log($responseConvesionId);
+			//error_log($responseCode);
+			//error_log($responseMessage);
+			//error_log($responseConvesionId);
 
 			
 			if ($responseCode === 200) 
@@ -443,7 +443,7 @@ class Rcmnd_referral_Public {
 	}
 	
 	public function triggered_rcmnd_order_approve_action( $order ){
-		error_log("RCMND: User click on approve conversion for order...");
+		//error_log("RCMND: User click on approve conversion for order...");
 		
 		$order_key = $order->get_order_number(); // The Order key
 	
@@ -457,11 +457,11 @@ class Rcmnd_referral_Public {
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';				
 		
-		error_log("RCMND: ConversionId = " . $rcmnd_conversionId);
+		//error_log("RCMND: ConversionId = " . $rcmnd_conversionId);
 		
 		if($rcmnd_conversionId != '')
 		{		
-			error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to approve conversion with id = ' . $rcmnd_conversionId);
+			//error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to approve conversion with id = ' . $rcmnd_conversionId);
 
 			$body = array(
 				'apiKey' => $pkey,
@@ -473,12 +473,12 @@ class Rcmnd_referral_Public {
             $responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
 			
-			error_log($responseCode);
+			//error_log($responseCode);
 
 			
 			if ($responseCode === 200) 
 			{
-				error_log('RCMND: Conversion Approved.');
+				//error_log('RCMND: Conversion Approved.');
 			}
 			else
 			{
@@ -492,7 +492,7 @@ class Rcmnd_referral_Public {
 	}
 	
 	public function triggered_rcmnd_order_reject_action( $order ){
-		error_log("RCMND: User click on reject conversion for order...");
+		//error_log("RCMND: User click on reject conversion for order...");
 		
 		$order_key = $order->get_order_number(); // The Order key
 	
@@ -506,11 +506,11 @@ class Rcmnd_referral_Public {
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';				
 		
-		error_log("RCMND: ConversionId = " . $rcmnd_conversionId);
+		e//rror_log("RCMND: ConversionId = " . $rcmnd_conversionId);
 		
 		if($rcmnd_conversionId != '')
 		{		
-			error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to reject conversion with id = ' . $rcmnd_conversionId);
+			//error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to reject conversion with id = ' . $rcmnd_conversionId);
 
 			$body = array(
 				'apiKey' => $pkey,
@@ -522,11 +522,11 @@ class Rcmnd_referral_Public {
             $responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
 			
-			error_log($responseCode);
+			//error_log($responseCode);
 
 			if ($responseCode === 200) 
 			{
-				error_log('RCMND: Conversion Rejected.');
+				//error_log('RCMND: Conversion Rejected.');
 			}
 			else
 			{
@@ -548,8 +548,8 @@ class Rcmnd_referral_Public {
 					
 		$response_object = (object) ['httpCode' => 500, 'conversionId' => 0, 'httpMessage' => ''];
 	
-		//$url = 'https://api.recommend.co' . $route;
-		$url = 'https://rpd-api-stage.azurewebsites.net' . $route;
+		$url = 'https://api.recommend.co' . $route;
+		//$url = 'https://rpd-api-stage.azurewebsites.net' . $route;
 
 		
 		$args = array(
@@ -597,7 +597,7 @@ class Rcmnd_referral_Public {
 	public function set_rcmndID_cookie() {
         
         $parameterRcmndID = '';
-		$parameterSSNID = '';
+	$parameterSSNID = '';
 		        
         if (isset($_GET['RcmndRef'])){
             $parameterRcmndID = sanitize_text_field($_GET['RcmndRef']);
@@ -628,7 +628,7 @@ class Rcmnd_referral_Public {
             $_SESSION["rcmnd_cookie"] = sanitize_text_field($parameterRcmndID);
         }
 		
-		if($parameterSSNID != '')
+	if($parameterSSNID != '')
         {            
             $_SESSION["rcmnd_cookie_ssnid"] = sanitize_text_field($parameterSSNID);
         }	
