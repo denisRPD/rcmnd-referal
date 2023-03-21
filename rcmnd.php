@@ -13,7 +13,7 @@
  * @package           Rcmnd_referral
  *
  * @wordpress-plugin
- * Plugin Name:       Recommend Referral Integration
+ * Plugin Name:       Recommend Marketing
  * Plugin URI:        https://about.recommend.co/api-docs
  * Description:       Recommend Referral Integration Plugin.
  * Version:           1.3.8
