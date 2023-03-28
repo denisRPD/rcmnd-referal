@@ -138,7 +138,49 @@ class Rcmnd_referral_Public {
 	}
 	
 	/**
-	 * Check referral conversion via API on processing order, PRODUCTION MODE
+	 * SET referral conversion via API on processing order, PRODUCTION MODE
+	 *
+	 * @since    1.1
+	 */
+	
+	public function rcmnd_set_referral_prod($order_id,$posted_data, $order){
+		
+		if ( ! $order_id ){
+		    return;
+		}
+		
+		$cookieValue = '';
+		$cookieValueSSNID = '';
+		
+		error_log('SET REFERRAL PROD: ORDERID = ' . $order_id);
+
+		
+		if( isset ($_SESSION["rcmnd_cookie"])){
+			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
+		}
+
+		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
+			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
+		}
+
+			
+		error_log('SET REFERRAL PROD: Cookie = ' . $cookieValue);
+		error_log('SET REFERRAL PROD: SSNID = ' . $cookieValueSSNID);
+
+
+		if(isset($cookieValue))
+		{
+			update_post_meta( $order->get_id(), 'rcmnd_conversion_code', $cookieValue );
+			update_post_meta( $order->get_id(), 'rcmnd_conversion_ssnid', $cookieValueSSNID );
+
+			unset($_SESSION["rcmnd_cookie"]);
+			unset($_SESSION["rcmnd_cookie_ssnid"]);
+
+		}
+    }
+	
+	/**
+	 * Check referral conversion via API on order completed, PRODUCTION MODE
 	 *
 	 * @since    1.1
 	 */
@@ -146,89 +188,88 @@ class Rcmnd_referral_Public {
         if ( ! $order_id ){
             return;
         }
+		
+	$rcmnd_conversion_code = '';
+	$rcmnd_conversion_ssnid = '';
 
          // Getting an instance of the order object
         $order = wc_get_order( $order_id );
 	
-		$order_key = $order->get_order_number(); // The Order key
-		$data  = $order->get_data(); // The Order data
+	$order_key = $order->get_order_number(); // The Order key
+	$data  = $order->get_data(); // The Order data
 
-		$order_total = '0';		
-		$order_currency = '';
-		$cookieValue = '';
-		$cookieValueSSNID = '';
-					
-		if( isset ($data['billing']['email'])){
-			$billing_email = sanitize_text_field($data['billing']['email']);
-		}
-		
-		if( isset ($data['billing']['phone'])){
-			$billing_phone = sanitize_text_field($data['billing']['phone']);
-		}
+	$order_total = '0';		
+	$order_currency = '';
+	$rcmnd_conversion_code = '';
+	$rcmnd_conversion_ssnid = '';
 
-		if( isset ($data['total'])){
-			$order_total = $data['total'];
-		}
-		
-		if( isset ($data['currency'])){
-			$order_currency = $data['currency'];
-		}
-		
-		if( isset ($_SESSION["rcmnd_cookie"])){
-			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
-		}
-		
-		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
-			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
-		}
-	
-	
-		//error_log("SSNID: " . $cookieValueSSNID);
+	if( isset ($data['billing']['email'])){
+		$billing_email = sanitize_text_field($data['billing']['email']);
+	}
 
-		unset($_SESSION["rcmnd_cookie_paid"]);
+	if( isset ($data['billing']['phone'])){
+		$billing_phone = sanitize_text_field($data['billing']['phone']);
+	}
 
-		if(isset ($_SESSION["rcmnd_cookie"]) && isset($cookieValue))
+	if( isset ($data['total'])){
+		$order_total = $data['total'];
+	}
+
+	if( isset ($data['currency'])){
+		$order_currency = $data['currency'];
+	}
+		
+	$rcmnd_conversion_code = $order->get_meta('rcmnd_conversion_code'); // The Order data
+	$rcmnd_conversion_ssnid = $order->get_meta('rcmnd_conversion_code'); // The Order data
+
+	error_log('CHECK REFERRAL CODE ON COMPLETE PAYMENT: CODE FROM ORDER: ' . $rcmnd_conversion_code);
+	error_log('CHECK REFERRAL CODE ON COMPLETE PAYMENT: SSNID FROM ORDER: ' . $rcmnd_conversion_ssnid);
+
+
+	unset($_SESSION["rcmnd_cookie_paid"]);
+
+	if($rcmnd_conversion_code !== '')
+	{
+		//error_log("Getting inside request");
+
+		$gso_options = get_option( 'rcmnd_gso' );
+		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';					
+
+		//error_log($pkey);
+
+		$body = array(
+			'apiToken' => $pkey,
+			'ssnid' => $rcmnd_conversion_ssnid,
+			'code' => $rcmnd_conversion_code,
+			'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
+			'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT),
+			'cartTotal' => sanitize_text_field($order_total)  . ' ' . sanitize_text_field($order_currency),
+			'orderNumber' => sanitize_text_field($order_key)
+		);
+
+		$response = $this->rcmnd_api_call($body, '/apikeys');
+
+		$responseCode = $response->{'httpCode'};
+		$responseMessage = $response->{'httpMessage'};
+		$responseConversionId = $response->{'conversionId'};
+
+		//error_log($responseCode);
+		//error_log($responseMessage);
+		//error_log($responseConvesionId);
+
+
+		if ($responseCode === 200) 
 		{
-			//error_log("Getting inside request");
-
-			$gso_options = get_option( 'rcmnd_gso' );
-			$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';					
-		
-			//error_log($pkey);
-
-			$body = array(
-				'apiToken' => $pkey,
-				'ssnid' => $cookieValueSSNID,
-				'code' => $cookieValue,
-				'email' => (is_email( $billing_email ) ? sanitize_email($billing_email) : ''),
-				'phone' => filter_var($billing_phone, FILTER_SANITIZE_NUMBER_INT),
-				'cartTotal' => sanitize_text_field($order_total)  . ' ' . sanitize_text_field($order_currency),
-				'orderNumber' => sanitize_text_field($order_key)
-			);
-		
-			$response = $this->rcmnd_api_call($body, '/apikeys');
-			
-			$responseCode = $response->{'httpCode'};
-			$responseMessage = $response->{'httpMessage'};
-			$responseConvesionId = $response->{'conversionId'};
-			
-			//error_log($responseCode);
-			//error_log($responseMessage);
-			//error_log($responseConvesionId);
-
-			
-			if ($responseCode === 200) 
-			{
-				// Add referral code to this order
-				update_post_meta( $order->get_id(), 'rcmnd_conversion_id', $responseConvesionId );
-				$_SESSION["rcmnd_cookie_paid"] = sanitize_text_field('true');
-			}
-			
-			//error_log($_SESSION["rcmnd_cookie_paid"]);
-
-		
-			unset($_SESSION["rcmnd_cookie"]);
+			// Add referral code to this order
+			error_log('Payment Complete - Converision Triggered - Updating PostMeta with Conversion ID');
+			update_post_meta( $order->get_id(), 'rcmnd_conversion_id', $responseConversionId );
 		}
+
+		//error_log($_SESSION["rcmnd_cookie_paid"]);
+
+
+		unset($_SESSION["rcmnd_cookie"]);
+	}
 		
     }
 	
@@ -237,19 +278,17 @@ class Rcmnd_referral_Public {
 	 *
 	 * @since    1.1
 	 */
-	public function rcmnd_check_referral_prod_message($order_id){
-				
+	public function rcmnd_check_referral_prod_message($order_id)
+	{
+		$order = wc_get_order( $order_id );
+		
 		$aso_options = get_option( 'rcmnd_aso' );
 		$opt1 = ( isset($aso_options['rcmnd_opt1'] ) ) ? sanitize_text_field($aso_options['rcmnd_opt1']) : '';
 		
-		if( isset ($_SESSION["rcmnd_cookie_paid"])){
-			$cookieValuePaid = sanitize_text_field($_SESSION["rcmnd_cookie_paid"]);
-		}
-		else{
-			$cookieValuePaid = 'false';
-		}
+		$rcmnd_conversion_code = $order->get_meta('rcmnd_conversion_code'); // The Order data
 
-		if($cookieValuePaid === 'true'){
+		if( isset ($rcmnd_conversion_code) && $rcmnd_conversion_code !== '')
+		{
 			$message = '
 					<div class="rcmndref-payment-success">
 						<div class="rcmndref-payment-success-image" style="float:left;width:5%;">
@@ -265,11 +304,13 @@ class Rcmnd_referral_Public {
 						</div>
 					</div>
 					</br>';
-		}		
+		}
 		else{
+			error_log('Payment Thank you page shown - Cookie not found - value: ' . $cookieValue);
+
 			$message = '';
 		}
-					
+		
 		echo wp_kses_post($message);
 	}
 	
