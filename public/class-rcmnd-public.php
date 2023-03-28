@@ -500,7 +500,7 @@ class Rcmnd_referral_Public {
 		
 		//error_log("RCMND: ConversionId = " . $rcmnd_conversionId);
 		
-		if($rcmnd_conversionId != '')
+		if($rcmnd_conversionId !== '')
 		{		
 			//error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to approve conversion with id = ' . $rcmnd_conversionId);
 
@@ -511,7 +511,7 @@ class Rcmnd_referral_Public {
 
 			$response = $this->rcmnd_api_call($body,'/apikeys/approve','POST');
 
-            $responseCode = $response->{'httpCode'};
+            		$responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
 			
 			//error_log($responseCode);
@@ -547,9 +547,9 @@ class Rcmnd_referral_Public {
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';				
 		
-		e//rror_log("RCMND: ConversionId = " . $rcmnd_conversionId);
+		//rror_log("RCMND: ConversionId = " . $rcmnd_conversionId);
 		
-		if($rcmnd_conversionId != '')
+		if($rcmnd_conversionId !== '')
 		{		
 			//error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to reject conversion with id = ' . $rcmnd_conversionId);
 
