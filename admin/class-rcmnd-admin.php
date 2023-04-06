@@ -414,7 +414,7 @@ class Rcmnd_referral_Admin {
 			
 			if($p_status === 'publish') 
 			{
-				$pr_status = 0;
+				$pr_status = $product->get_stock_quantity();
 				if($p_stock_status === 'outofstock') // outofstock or instock
 				{
 					$pr_status = -2;
@@ -511,7 +511,7 @@ class Rcmnd_referral_Admin {
 
 				if($p_status === 'publish' && $is_product_sync_on_mode) 
 				{
-					$pr_status = 0;
+					$pr_status = $product->get_stock_quantity();
 					if($p_stock_status === 'outofstock') // outofstock or instock
 					{
 						$pr_status = -2;
