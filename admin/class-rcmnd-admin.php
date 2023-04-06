@@ -414,10 +414,21 @@ class Rcmnd_referral_Admin {
 			
 			if($p_status === 'publish') 
 			{
-				$pr_status = $product->get_stock_quantity();
+				$pr_status = 0;
 				if($p_stock_status === 'outofstock') // outofstock or instock
 				{
 					$pr_status = -2;
+				}
+				else
+				{
+					if($product->get_stock_quantity() !== '')
+					{
+						$pr_status = $product->get_stock_quantity();
+					}	
+					else
+					{
+						$pr_status = 1;
+					}	
 				}
 
 				//error_log('status => ' . $pr_status);
@@ -511,10 +522,21 @@ class Rcmnd_referral_Admin {
 
 				if($p_status === 'publish' && $is_product_sync_on_mode) 
 				{
-					$pr_status = $product->get_stock_quantity();
+					$pr_status = 0;
 					if($p_stock_status === 'outofstock') // outofstock or instock
 					{
 						$pr_status = -2;
+					}
+					else
+					{
+						if($product->get_stock_quantity() !== '')
+						{
+							$pr_status = $product->get_stock_quantity();
+						}	
+						else
+						{
+							$pr_status = 1;
+						}	
 					}
 					//error_log('status => ' . $pr_status);
 
