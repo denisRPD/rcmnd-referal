@@ -13,12 +13,12 @@
  * @package           Rcmnd_referral
  *
  * @wordpress-plugin
- * Plugin Name:       Recommend Referral Integration
+ * Plugin Name:       Recommend Marketing
  * Plugin URI:        https://about.recommend.co/api-docs
  * Description:       Recommend Referral Integration Plugin.
- * Version:           1.3.8
+ * Version:           1.3.9
  * Author:            Recommend Inc.
- * Author URI:        https://about.recommend.co
+ * Author URI:        https://www.recommend.co/for-developers
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       rcmnd

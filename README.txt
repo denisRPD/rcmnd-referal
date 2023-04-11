@@ -1,11 +1,11 @@
 === Recommend Referral, Integration Plugin ===
 Contributors: denisrcmnd
-Donate link: https://about.recommend.co
-Tags: recommend, referral, webshop, integration, codes
+Donate link: https://www.recommend.co/for-developers
+Tags: recommend, referral, webshop, integration, marketing
 Requires at least: 4.6
-Tested up to: 6.1.1
+Tested up to: 6.2
 Requires PHP: 5.6
-Stable tag: 1.3.8
+Stable tag: 1.3.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,13 +44,18 @@ All the answers are on our site (at least we try): https://about.recommend.co/ap
 
 == Screenshots ==
 
-1. Product page (screenshots/SS1_ProductCard.png)
-2. Recommend referral in action (screenshots/SS2_ProductCart.png)
-3. Checkout page (screenshots/SS3_ThankYouPage.png)
-4. Options panel (screenshots/SS4_OptionsPanel.png)
+1. Settings page (screenshots/screenshot-1.png)
+2. Settings page sync success (screenshots/screenshot-2.png)
+3. Product settings page (screenshots/screenshot-3.png)
+4. Product page with referral (screenshots/screenshot-4.png)
+5. Checkout page - payment success with conversion (screenshots/screenshot-5.png)
+6. Order oage - conversion info with referral codes (screenshots/screenshot-6.png)
 
 
 == Changelog ==
+
+= 1.3.9 =
+* Single product sync and categories added to settings. Card payment fetching conversion fixed. User sessionId added to request. ReadMe updated.
 
 = 1.3.8 =
 * Test mode fixes.
