@@ -388,15 +388,10 @@ class Rcmnd_referral_Admin {
 	 */
 	public function rcmnd_product_update($product_id, $product){
 		$gso_options = get_option( 'rcmnd_gso' );
-		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
-		//$is_sync_on = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';		
-		//$is_sync_on_mode = ($is_sync_on == 'on') ? true : false; 
-		
+		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';		
 		$is_sync_on = get_post_meta($product_id, '_rcmnd_product_sync', true);		
 		$is_sync_on_mode = ($is_sync_on == 'yes') ? true : false; 
 		
-		//error_log("Product updated action triggered. Updating Recommend DB.");
-
 		if($is_sync_on_mode)
 		{
 			$p_id = $product-> get_id();
@@ -408,10 +403,7 @@ class Rcmnd_referral_Admin {
 			$p_price = $product->get_price();
 			$p_stock_status = $product->get_stock_status();
 			$p_category = get_post_meta($product_id,'_rcmnd_product_sync_category',true) === '' ? '0' : get_post_meta($product_id,'_rcmnd_product_sync_category',true);
-
-			//error_log('Title => ' . $p_name);
-			//error_log('$categoryId => ' . $p_category);
-			
+	
 			if($p_status === 'publish') 
 			{
 				$pr_status = 0;
@@ -421,19 +413,16 @@ class Rcmnd_referral_Admin {
 				}
 				else
 				{
-					if($product->get_stock_quantity() !== '')
-					{
-						$pr_status = $product->get_stock_quantity();
-					}	
-					else
+					if(empty($product->get_stock_quantity()))
 					{
 						$pr_status = 1;
 					}	
+					else
+					{
+						$pr_status = $product->get_stock_quantity();
+					}	
 				}
-
-				//error_log('status => ' . $pr_status);
-				//error_log("-----SENDING TO RECOMMEND------");
-
+				
 				$body = array(
 					'apiToken' => $pkey,
 					'internalId' => $p_sku,
@@ -452,9 +441,6 @@ class Rcmnd_referral_Admin {
 
 				$responseCode = $response->{'httpCode'};
 				$responseMessage = $response->{'httpMessage'};
-
-				//error_log($responseCode);
-				//error_log($responseMessage);
 
 				if ( $responseCode != 200 ) {
 					//error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
@@ -480,13 +466,8 @@ class Rcmnd_referral_Admin {
 		$is_sync_on = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';		
 		$is_sync_on_mode = ($is_sync_on == 'on') ? true : false; 
 		
-		//error_log("Trying to sync products on settings update...");
-
 		if($is_sync_on_mode)
 		{
-			// SYNC MODE ON - NEED TO PROCESS PRODUCTS
-			//error_log("Starting with products loop");
-
 			$args = array(
 				'post_type'      => 'product'
 			);
@@ -494,11 +475,11 @@ class Rcmnd_referral_Admin {
 			$loop = new WP_Query( $args );
 
 			while ( $loop->have_posts() ) : $loop->the_post();
-				error_log("-----NEW PRODUCT------");
 				global $product;
 			 	$p_id = $product-> get_id();
+						
+				$is_product_sync_on = get_post_meta($p_id, '_rcmnd_product_sync', true);	
 			
-				$is_product_sync_on = get_post_meta($p_id, '_rcmnd_product_sync', true);		
 				$is_product_sync_on_mode = ($is_product_sync_on == 'yes') ? true : false;
 			
 				$p_status = $product->get_status();
@@ -509,39 +490,29 @@ class Rcmnd_referral_Admin {
 				$p_price = $product->get_price();
 				$p_stock_status = $product->get_stock_status();
 				$p_category = get_post_meta($p_id,'_rcmnd_product_sync_category',true) === '' ? '0' : get_post_meta($p_id,'_rcmnd_product_sync_category',true);
-
-				//error_log('Title => ' . $p_name);		
-			    	//error_log('$categoryId => ' . $p_category);
-				/*error_log('Status => ' . $p_status);
-				error_log('apiToken => ' . $pkey);
-				error_log('internalId => ' . $p_sku);
-				error_log('price => ' . $p_price);
-				error_log('description => ' . ($p_description === '') ? "pero" : $p_description);
-				error_log('url => ' . $p_permalink);	
-				error_log('image => ' . get_the_post_thumbnail_url($p_id));*/
-
+				error_log('status: ' . $p_status);
+				error_log('Stock status: ' . $p_stock_status);
+				error_log('Sync mode: ' . $is_product_sync_on_mode);
+			
 				if($p_status === 'publish' && $is_product_sync_on_mode) 
 				{
 					$pr_status = 0;
-					if($p_stock_status === 'outofstock') // outofstock or instock
+					if($p_stock_status == 'outofstock') // outofstock or instock
 					{
 						$pr_status = -2;
 					}
 					else
 					{
-						if($product->get_stock_quantity() !== '')
-						{
-							$pr_status = $product->get_stock_quantity();
-						}	
-						else
+						if(empty($product->get_stock_quantity()))
 						{
 							$pr_status = 1;
 						}	
+						else
+						{
+							$pr_status = $product->get_stock_quantity();
+						}	
 					}
-					//error_log('status => ' . $pr_status);
-
-					//error_log("-----SENDING TO RECOMMEND------");
-
+					
 					$body = array(
 						'apiToken' => $pkey,
 						'internalId' => $p_sku,
@@ -560,10 +531,6 @@ class Rcmnd_referral_Admin {
 
 					$responseCode = $response->{'httpCode'};
 					$responseMessage = $response->{'httpMessage'};
-
-					//error_log($responseCode);
-					//error_log($responseMessage);
-
 
 					if ( $responseCode != 200 ) {
 						//error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
@@ -700,9 +667,9 @@ class Rcmnd_referral_Admin {
 		if ( !is_wp_error( $response )) 
 		{
 			$httpCode = wp_remote_retrieve_response_code( $response );
-            $httpMessage = json_decode( wp_remote_retrieve_body( $response ) );
+            		$httpMessage = json_decode( wp_remote_retrieve_body( $response ) );
 			
-            $response_object->httpCode = $httpCode;
+            		$response_object->httpCode = $httpCode;
 			
 			if(isset($httpMessage->message)){
 				$response_object->httpMessage = $httpMessage->message;
