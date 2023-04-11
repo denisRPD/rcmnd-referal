@@ -151,10 +151,7 @@ class Rcmnd_referral_Public {
 		
 		$cookieValue = '';
 		$cookieValueSSNID = '';
-		
-		error_log('SET REFERRAL PROD: ORDERID = ' . $order_id);
-
-		
+				
 		if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
@@ -162,11 +159,6 @@ class Rcmnd_referral_Public {
 		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
 			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
 		}
-
-			
-		error_log('SET REFERRAL PROD: Cookie = ' . $cookieValue);
-		error_log('SET REFERRAL PROD: SSNID = ' . $cookieValueSSNID);
-
 
 		if(isset($cookieValue))
 		{
@@ -222,9 +214,6 @@ class Rcmnd_referral_Public {
 	$rcmnd_conversion_code = $order->get_meta('rcmnd_conversion_code'); // The Order data
 	$rcmnd_conversion_ssnid = $order->get_meta('rcmnd_conversion_code'); // The Order data
 
-	error_log('CHECK REFERRAL CODE ON COMPLETE PAYMENT: CODE FROM ORDER: ' . $rcmnd_conversion_code);
-	error_log('CHECK REFERRAL CODE ON COMPLETE PAYMENT: SSNID FROM ORDER: ' . $rcmnd_conversion_ssnid);
-
 
 	unset($_SESSION["rcmnd_cookie_paid"]);
 
@@ -253,20 +242,12 @@ class Rcmnd_referral_Public {
 		$responseMessage = $response->{'httpMessage'};
 		$responseConversionId = $response->{'conversionId'};
 
-		//error_log($responseCode);
-		//error_log($responseMessage);
-		//error_log($responseConvesionId);
-
-
 		if ($responseCode === 200) 
 		{
 			// Add referral code to this order
 			error_log('Payment Complete - Converision Triggered - Updating PostMeta with Conversion ID');
 			update_post_meta( $order->get_id(), 'rcmnd_conversion_id', $responseConversionId );
 		}
-
-		//error_log($_SESSION["rcmnd_cookie_paid"]);
-
 
 		unset($_SESSION["rcmnd_cookie"]);
 	}
@@ -306,8 +287,6 @@ class Rcmnd_referral_Public {
 					</br>';
 		}
 		else{
-			error_log('Payment Thank you page shown - Cookie not found - value: ' . $cookieValue);
-
 			$message = '';
 		}
 		
@@ -426,8 +405,6 @@ class Rcmnd_referral_Public {
 	public function rcmnd_order_action( $actions, $order ){
 		
 		$order_rcmnd_conversion = $order->get_meta('rcmnd_conversion_id'); // The Order data
-
-		//error_log($order_rcmnd_conversion);
 				
 		if($order_rcmnd_conversion != null)
 		{
@@ -452,7 +429,7 @@ class Rcmnd_referral_Public {
 
 			$response = $this->rcmnd_api_call($body,'/apikeys/getConversionStatus','POST');
 
-            $responseCode = $response->{'httpCode'};
+            		$responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
 			
 			//error_log($responseMessage);
@@ -483,9 +460,7 @@ class Rcmnd_referral_Public {
 		return $actions;
 	}
 	
-	public function triggered_rcmnd_order_approve_action( $order ){
-		//error_log("RCMND: User click on approve conversion for order...");
-		
+	public function triggered_rcmnd_order_approve_action( $order ){	
 		$order_key = $order->get_order_number(); // The Order key
 	
 		$order_data_conversion = $order->get_meta('rcmnd_conversion_id');
@@ -497,13 +472,9 @@ class Rcmnd_referral_Public {
 		
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';				
-		
-		//error_log("RCMND: ConversionId = " . $rcmnd_conversionId);
-		
+				
 		if($rcmnd_conversionId !== '')
 		{		
-			//error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to approve conversion with id = ' . $rcmnd_conversionId);
-
 			$body = array(
 				'apiKey' => $pkey,
 				'conversionId' => $rcmnd_conversionId
@@ -513,17 +484,14 @@ class Rcmnd_referral_Public {
 
             		$responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
-			
-			//error_log($responseCode);
-
-			
+					
 			if ($responseCode === 200) 
 			{
 				//error_log('RCMND: Conversion Approved.');
 			}
 			else
 			{
-				error_log('RCMND: Cannot approve conversion, EX: ' . $responseMessage);
+				//error_log('RCMND: Cannot approve conversion, EX: ' . $responseMessage);
 			}	
 		}
 		else
@@ -533,8 +501,7 @@ class Rcmnd_referral_Public {
 	}
 	
 	public function triggered_rcmnd_order_reject_action( $order ){
-		//error_log("RCMND: User click on reject conversion for order...");
-		
+	
 		$order_key = $order->get_order_number(); // The Order key
 	
 		$order_data_conversion = $order->get_meta('rcmnd_conversion_id');
@@ -547,12 +514,9 @@ class Rcmnd_referral_Public {
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';				
 		
-		//rror_log("RCMND: ConversionId = " . $rcmnd_conversionId);
-		
+	
 		if($rcmnd_conversionId !== '')
 		{		
-			//error_log('RCMND: Conversion exists. Sending conversion to rcmnd api to reject conversion with id = ' . $rcmnd_conversionId);
-
 			$body = array(
 				'apiKey' => $pkey,
 				'conversionId' => $rcmnd_conversionId
@@ -560,23 +524,21 @@ class Rcmnd_referral_Public {
 
 			$response = $this->rcmnd_api_call($body,'/apikeys/reject','POST');
 
-            $responseCode = $response->{'httpCode'};
+            		$responseCode = $response->{'httpCode'};
 			$responseMessage = $response->{'httpMessage'};
 			
-			//error_log($responseCode);
-
 			if ($responseCode === 200) 
 			{
 				//error_log('RCMND: Conversion Rejected.');
 			}
 			else
 			{
-				error_log('RCMND: Cannot reject conversion, EX: ' . $responseMessage);
+				//error_log('RCMND: Cannot reject conversion, EX: ' . $responseMessage);
 			}	
 		}
 		else
 		{
-			error_log('RCMND: Conversion cannot be reject since conversionId cannot be read.');
+			//error_log('RCMND: Conversion cannot be reject since conversionId cannot be read.');
 		}
 	}
 	
@@ -590,8 +552,6 @@ class Rcmnd_referral_Public {
 		$response_object = (object) ['httpCode' => 500, 'conversionId' => 0, 'httpMessage' => ''];
 	
 		$url = 'https://api.recommend.co' . $route;
-		//$url = 'https://rpd-api-stage.azurewebsites.net' . $route;
-
 		
 		$args = array(
 			'method'      => $method,
@@ -624,9 +584,7 @@ class Rcmnd_referral_Public {
 				$response_object->conversionId = $httpMessage->conversionId;
 			}
 		}
-		
-		//error_log('message2: ' . $response_object->{'httpMessage'});
-			
+					
 		return $response_object;
 	}
 	
