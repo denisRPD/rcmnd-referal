@@ -1,9 +1,9 @@
 === Recommend Referral, Integration Plugin ===
 Contributors: denisrcmnd
-Donate link: https://about.recommend.co
-Tags: recommend, referral, webshop, integration, codes
+Donate link: https://www.recommend.co/for-developers
+Tags: recommend, referral, webshop, integration, marketing
 Requires at least: 4.6
-Tested up to: 6.1.1
+Tested up to: 6.2
 Requires PHP: 5.6
 Stable tag: 1.3.9
 License: GPLv2 or later
@@ -51,6 +51,9 @@ All the answers are on our site (at least we try): https://about.recommend.co/ap
 
 
 == Changelog ==
+
+= 1.3.9 =
+* Single product sync and categories added to settings. Card payment fetching conversion fixed. User sessionId added to request.
 
 = 1.3.8 =
 * Test mode fixes.
