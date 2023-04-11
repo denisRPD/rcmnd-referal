@@ -645,8 +645,7 @@ class Rcmnd_referral_Admin {
         $response_object = (object) ['httpCode' => 500, 'httpMessage' => ''];
 	
 		$url = 'https://api.recommend.co' . $route;
-		//$url = 'https://rpd-api-dev.azurewebsites.net' . $route;
-
+		
 		$args = array(
 			'method'      => $method,
 			'body'        => wp_json_encode( $body ),
