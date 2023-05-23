@@ -155,13 +155,21 @@ class Rcmnd_referral {
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_general_settings' );
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_advanced_settings' );
 
-		$this->loader->add_action( 'woocommerce_update_product', $plugin_admin, 'rcmnd_product_update', 10, 2 );
-		$this->loader->add_action( 'woocommerce_new_product', $plugin_admin, 'rcmnd_product_update', 10, 2 );
 		
-		$this->loader->add_action( 'woocommerce_product_options_general_product_data', $plugin_admin, 'rcmnd_product_custom_fields_add');
-		$this->loader->add_action( 'woocommerce_process_product_meta', $plugin_admin, 'product_custom_fields_rcmnd_sync_option');
-		$this->loader->add_action( 'manage_product_posts_custom_column' , $plugin_admin, 'rcmnd_custom_column', 10, 2 );
-		$this->loader->add_filter( 'manage_product_posts_columns', $plugin_admin, 'rcmnd_set_custom_columns');
+		// Check if sync mode is active
+		$gso_options = get_option( 'rcmnd_gso' );
+		$is_sync = ( isset($gso_options['rcmnd_autosync'] ) ) ? $gso_options['rcmnd_autosync'] : 'off';		
+		$sync_is_on = ($is_sync == 'on') ? true : false; 
+   
+		if($sync_is_on){
+            $this->loader->add_action( 'woocommerce_update_product', $plugin_admin, 'rcmnd_product_update', 10, 2 );
+			$this->loader->add_action( 'woocommerce_new_product', $plugin_admin, 'rcmnd_product_update', 10, 2 );
+
+			$this->loader->add_action( 'woocommerce_product_options_general_product_data', $plugin_admin, 'rcmnd_product_custom_fields_add');
+			$this->loader->add_action( 'woocommerce_process_product_meta', $plugin_admin, 'product_custom_fields_rcmnd_sync_option');
+			$this->loader->add_action( 'manage_product_posts_custom_column' , $plugin_admin, 'rcmnd_custom_column', 10, 2 );
+			$this->loader->add_filter( 'manage_product_posts_columns', $plugin_admin, 'rcmnd_set_custom_columns');
+        }
 	}
 
 	/**

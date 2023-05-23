@@ -5,7 +5,7 @@ Tags: recommend, referral, webshop, integration, marketing
 Requires at least: 4.6
 Tested up to: 6.2
 Requires PHP: 5.6
-Stable tag: 1.3.9
+Stable tag: 1.3.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,7 +40,7 @@ e.g.
 
 = Any questions? =
 
-All the answers are on our site (at least we try): https://about.recommend.co/api-docs
+All the answers are on our site (at least we try): https://www.recommend.co/for-developers
 
 == Screenshots ==
 
@@ -53,6 +53,9 @@ All the answers are on our site (at least we try): https://about.recommend.co/ap
 
 
 == Changelog ==
+
+= 1.3.10 =
+* Syncronization options changed to be optional. Minor fixes in remote API calls.
 
 = 1.3.9 =
 * Single product sync and categories added to settings. Card payment fetching conversion fixed. User sessionId added to request. ReadMe updated.
