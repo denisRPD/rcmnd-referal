@@ -553,9 +553,12 @@ class Rcmnd_referral_Public {
 	
 		$url = 'https://api.recommend.co' . $route;
 		
+		if($method === 'POST')
+			$body = wp_json_encode($body);
+
 		$args = array(
 			'method'      => $method,
-			'body'        => wp_json_encode( $body ),
+			'body'        => $body,
 			'timeout'     => '45',
 			'redirection' => '5',
 			'httpversion' => '1.0',
