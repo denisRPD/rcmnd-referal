@@ -34,7 +34,7 @@
 	<?php
 		if ( isset( $_GET['settings-updated'] ) && $_GET['settings-updated'] ){
 			$this->rcmnd_check_connection();
-			$this->rcmnd_sync_products();	
+			//$this->rcmnd_sync_products();	
 		} 
 	?>
     <form action="options.php" method="post">

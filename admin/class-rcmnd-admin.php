@@ -148,7 +148,7 @@ class Rcmnd_referral_Admin {
 
 		add_settings_field(
 			'rcmnd_autosync', //id
-			__( 'Auto sync products?', 'rcmnd' ), // title
+			__( 'Syncronization', 'rcmnd' ), // title
 			array( $this, 'rcmnd_autosync_cb' ), //callback
 			'rcmnd_gso', //page
 			'rcmnd_gso_section', // section
@@ -157,7 +157,7 @@ class Rcmnd_referral_Admin {
 
 		add_settings_field(
 			'rcmnd_istest', //id
-			__( 'Testing?', 'rcmnd' ), // title
+			__( 'Testing', 'rcmnd' ), // title
 			array( $this, 'rcmnd_istest_cb' ), //callback
 			'rcmnd_gso', //page
 			'rcmnd_gso_section', // section
@@ -286,7 +286,7 @@ class Rcmnd_referral_Admin {
 			<fieldset>
 				<label>
 					<input type="checkbox" name="rcmnd_gso[rcmnd_autosync]" <?php echo esc_attr($checked); ?>>
-					<p class="description"><?php esc_html(_e( 'If you check this option, products will be automatically syncronized with Recommend on every change.', 'rcmnd' )); ?></p>
+					<p class="description"><?php esc_html(_e( 'If you check this option, product data could be syncronized with Recommend on every change if set in product admin page.', 'rcmnd' )); ?></p>
 				</label>
 			</fieldset>
 		<?php
@@ -391,7 +391,7 @@ class Rcmnd_referral_Admin {
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';		
 		$is_sync_on = get_post_meta($product_id, '_rcmnd_product_sync', true);		
 		$is_sync_on_mode = ($is_sync_on == 'yes') ? true : false; 
-		
+				
 		if($is_sync_on_mode)
 		{
 			$p_id = $product-> get_id();
@@ -402,7 +402,9 @@ class Rcmnd_referral_Admin {
 			$p_permalink = get_permalink( $product->get_id() );
 			$p_price = $product->get_price();
 			$p_stock_status = $product->get_stock_status();
-			$p_category = get_post_meta($product_id,'_rcmnd_product_sync_category',true) === '' ? '0' : get_post_meta($product_id,'_rcmnd_product_sync_category',true);
+			$p_category = get_post_meta($product_id,'_rcmnd_product_sync_category',true) === '' ? '0' : 				     
+			
+			get_post_meta($product_id,'_rcmnd_product_sync_category',true);
 	
 			if($p_status === 'publish') 
 			{
@@ -423,6 +425,20 @@ class Rcmnd_referral_Admin {
 					}	
 				}
 				
+
+				error_log("apiToken: " . $pkey);
+				error_log("internalId: " . $p_sku);
+				error_log("title: " . $p_name);
+				error_log("categoryPath: " . 'woo integration');
+				error_log("categoryId: " . $p_category);
+				error_log("price: " . $p_price);
+				error_log("url: " . $p_permalink);
+				error_log("image: " . get_the_post_thumbnail_url($p_id));
+				$descr = ($p_description === '') ? " " : $p_description;
+				error_log("description: " . $descr);
+				error_log("status: " . $pr_status);
+
+				
 				$body = array(
 					'apiToken' => $pkey,
 					'internalId' => $p_sku,
@@ -441,6 +457,10 @@ class Rcmnd_referral_Admin {
 
 				$responseCode = $response->{'httpCode'};
 				$responseMessage = $response->{'httpMessage'};
+				
+				error_log($responseCode);
+				error_log($responseMessage);
+
 
 				if ( $responseCode != 200 ) {
 					//error_log("ERROR ON UPDATE PRODUCT IN RECEOMMEND DB!");
@@ -489,10 +509,10 @@ class Rcmnd_referral_Admin {
 				$p_permalink = get_permalink( $product->get_id() );
 				$p_price = $product->get_price();
 				$p_stock_status = $product->get_stock_status();
-				$p_category = get_post_meta($p_id,'_rcmnd_product_sync_category',true) === '' ? '0' : get_post_meta($p_id,'_rcmnd_product_sync_category',true);
-				error_log('status: ' . $p_status);
-				error_log('Stock status: ' . $p_stock_status);
-				error_log('Sync mode: ' . $is_product_sync_on_mode);
+				$p_category = get_post_meta($p_id,'_rcmnd_product_sync_category',true) === '' ? '0' : 
+			
+				get_post_meta($p_id,'_rcmnd_product_sync_category',true);
+				
 			
 				if($p_status === 'publish' && $is_product_sync_on_mode) 
 				{
@@ -573,9 +593,14 @@ class Rcmnd_referral_Admin {
 
 		
 		// Select list for categories
-		$response = $this->rcmnd_api_call('','/product-categories','GET');
-		$categories = $response->{'httpBody'};
-
+		//$response = $this->rcmnd_api_call('','/product-categories','GET');
+		//$categories = $response->{'httpBody'};
+		
+		// Select list for categories
+		$bb = [];
+		$response = $this->rcmnd_api_call($bb, '/product-categories', 'GET');
+		$categories = $response->httpBody;
+		
 		$options[''] = __( 'Select a Recommend Category...', 'rcmnd'); // default value
 		$this->get_all_categories($categories, $options,'');
 
@@ -591,6 +616,8 @@ class Rcmnd_referral_Admin {
 			'value'   => $value,
 		));
 		echo '</div>';
+		
+		
 	}
 
 	public function product_custom_fields_rcmnd_sync_option($post_id)
@@ -646,9 +673,12 @@ class Rcmnd_referral_Admin {
 	
 		$url = 'https://api.recommend.co' . $route;
 		
+		if($method === 'POST')
+			$body = wp_json_encode($body);
+		
 		$args = array(
 			'method'      => $method,
-			'body'        => wp_json_encode( $body ),
+			'body'        => $body ,
 			'timeout'     => '45',
 			'redirection' => '5',
 			'httpversion' => '1.0',
