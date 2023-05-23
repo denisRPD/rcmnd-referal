@@ -286,7 +286,7 @@ class Rcmnd_referral_Admin {
 			<fieldset>
 				<label>
 					<input type="checkbox" name="rcmnd_gso[rcmnd_autosync]" <?php echo esc_attr($checked); ?>>
-					<p class="description"><?php esc_html(_e( 'If you check this option, product data could be syncronized with Recommend on every change.', 'rcmnd' )); ?></p>
+					<p class="description"><?php esc_html(_e( 'If you check this option, product data could be syncronized with Recommend on every change if set in product admin page.', 'rcmnd' )); ?></p>
 				</label>
 			</fieldset>
 		<?php
