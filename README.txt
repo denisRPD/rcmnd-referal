@@ -3,9 +3,9 @@ Contributors: denisrcmnd
 Donate link: https://www.recommend.co/for-developers
 Tags: recommend, referral, webshop, integration, marketing
 Requires at least: 4.6
-Tested up to: 6.2
+Tested up to: 6.2.2
 Requires PHP: 5.6
-Stable tag: 1.3.10
+Stable tag: 1.3.11
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -53,6 +53,9 @@ All the answers are on our site (at least we try): https://www.recommend.co/for-
 
 
 == Changelog ==
+
+= 1.3.11 =
+* Session data removed - cookies added for tracking conversion codes. Code cleanup.
 
 = 1.3.10 =
 * Syncronization options changed to be optional. Minor fixes in remote API calls.
