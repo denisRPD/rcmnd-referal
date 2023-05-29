@@ -199,20 +199,16 @@ class Rcmnd_referral {
 		$is_test = ( isset($gso_options['rcmnd_istest'] ) ) ? $gso_options['rcmnd_istest'] : 'off';		
 		$is_test_mode = ($is_test == 'on') ? true : false; 
         if($is_test_mode){
-            $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_check_referral_test',1,6 ); // Check referral code on add to cart action (TEST MODE)
+            $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_check_referral_test',1,6 ); 
+			// Check referral code on add to cart action (TEST MODE)
         }
         else{
 			// Show response on add to cart and thankyour pages (PRODUCTION MODE)
-            $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_addedtocart',1,6 );			
+            $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_addedtocart',1,6 );					
 			$this->loader->add_action( 'woocommerce_order_status_processing', $plugin_public, 'rcmnd_check_referral_prod',10,1 );
-            $this->loader->add_action( 'woocommerce_thankyou', $plugin_public, 'rcmnd_check_referral_prod_message',1,6 );
-		
-	    $this->loader->add_action( 'woocommerce_add_to_cart', $plugin_public, 'rcmnd_addedtocart',1,6 );			
-	    $this->loader->add_action( 'woocommerce_checkout_order_processed', $plugin_public, 'rcmnd_set_referral_prod',10,3 );
+	    	$this->loader->add_action( 'woocommerce_checkout_order_processed', $plugin_public, 'rcmnd_set_referral_prod',10,3 );
             $this->loader->add_action( 'woocommerce_payment_complete', $plugin_public, 'rcmnd_check_referral_prod',10,1 );
             $this->loader->add_action( 'woocommerce_thankyou', $plugin_public, 'rcmnd_check_referral_prod_message',1,6 );
-		
-		
         }
 
 		// Show recommend referral notice below add to cart button
