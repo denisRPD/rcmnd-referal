@@ -16,7 +16,7 @@
  * Plugin Name:       Recommend Marketing
  * Plugin URI:        https://www.recommend.co/for-developers
  * Description:       Recommend Referral Integration Plugin.
- * Version:           1.3.10
+ * Version:           1.3.11
  * Author:            Recommend Inc.
  * Author URI:        https://www.recommend.co/for-developers
  * License:           GPL-2.0+
