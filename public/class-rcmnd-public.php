@@ -1,8 +1,8 @@
 <?php
 
-if( empty(session_id()) && !headers_sent()){
+/*if( empty(session_id()) && !headers_sent()){
     session_start();
-}
+}*/
 
 /**
  * The public-facing functionality of the plugin.
@@ -104,13 +104,22 @@ class Rcmnd_referral_Public {
 		$cookieValue = '';
 		$cookieValueSSNID = '';
 		
-		if( isset ($_SESSION["rcmnd_cookie"])){
+		if(isset($_COOKIE['rcmnd_cookie']))
+		{
+			$cookieValue = sanitize_text_field($_COOKIE['rcmnd_cookie']);
+		}
+		if(isset($_COOKIE['rcmnd_cookie_ssnid']))
+		{
+			$cookieValueSSNID = sanitize_text_field($_COOKIE['rcmnd_cookie_ssnid']);
+		}
+		
+		/*if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
 		
 		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
 			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
-		}
+		}*/
 		
 		$gso_options = get_option( 'rcmnd_gso' );
 		$pkey = ( isset($gso_options['rcmnd_pkey'] ) ) ? sanitize_text_field($gso_options['rcmnd_pkey']) : '';	
@@ -132,7 +141,8 @@ class Rcmnd_referral_Public {
 		if ($responseCode === 200) 
 		{
 		    $this->rcmnd_set_cart_tags($cart_item_key, $product_id);
-			unset($_SESSION["rcmnd_cookie"]);
+			//unset($_SESSION["rcmnd_cookie"]);
+			unset($_COOKIE["rcmnd_cookie"]);
 	    }
 		
 	}
@@ -145,6 +155,8 @@ class Rcmnd_referral_Public {
 	
 	public function rcmnd_set_referral_prod($order_id,$posted_data, $order){
 		
+		//error_log("Order processed - setting rcmnd referral keys to order with id: " . $order_id);
+		
 		if ( ! $order_id ){
 		    return;
 		}
@@ -152,22 +164,37 @@ class Rcmnd_referral_Public {
 		$cookieValue = '';
 		$cookieValueSSNID = '';
 				
-		if( isset ($_SESSION["rcmnd_cookie"])){
+		/*if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
 
 		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
 			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
+		}*/
+		
+		if(isset($_COOKIE['rcmnd_cookie']))
+		{
+			$cookieValue = sanitize_text_field($_COOKIE['rcmnd_cookie']);
 		}
+		if(isset($_COOKIE['rcmnd_cookie_ssnid']))
+		{
+			$cookieValueSSNID = sanitize_text_field($_COOKIE['rcmnd_cookie_ssnid']);
+		}
+		
+		//error_log("REF CODE RCMND are: " . $cookieValue);
+		//error_log("SSNID CODE RCMND are: " . $cookieValueSSNID);
+
 
 		if(isset($cookieValue))
 		{
 			update_post_meta( $order->get_id(), 'rcmnd_conversion_code', $cookieValue );
 			update_post_meta( $order->get_id(), 'rcmnd_conversion_ssnid', $cookieValueSSNID );
 
-			unset($_SESSION["rcmnd_cookie"]);
-			unset($_SESSION["rcmnd_cookie_ssnid"]);
-
+			//unset($_SESSION["rcmnd_cookie"]);
+			//unset($_SESSION["rcmnd_cookie_ssnid"]);
+			
+			unset($_COOKIE['rcmnd_cookie']);
+			unset($_COOKIE['rcmnd_cookie_ssnid']);
 		}
     }
 	
@@ -184,8 +211,8 @@ class Rcmnd_referral_Public {
 	$rcmnd_conversion_code = '';
 	$rcmnd_conversion_ssnid = '';
 
-         // Getting an instance of the order object
-        $order = wc_get_order( $order_id );
+	// Getting an instance of the order object
+	$order = wc_get_order( $order_id );
 	
 	$order_key = $order->get_order_number(); // The Order key
 	$data  = $order->get_data(); // The Order data
@@ -212,10 +239,12 @@ class Rcmnd_referral_Public {
 	}
 		
 	$rcmnd_conversion_code = $order->get_meta('rcmnd_conversion_code'); // The Order data
-	$rcmnd_conversion_ssnid = $order->get_meta('rcmnd_conversion_code'); // The Order data
+	$rcmnd_conversion_ssnid = $order->get_meta('rcmnd_conversion_ssnid'); // The Order data
 
 
-	unset($_SESSION["rcmnd_cookie_paid"]);
+	//unset($_SESSION["rcmnd_cookie_paid"]);
+	unset($_COOKIE['rcmnd_cookie_paid']);
+
 
 	if($rcmnd_conversion_code !== '')
 	{
@@ -245,11 +274,12 @@ class Rcmnd_referral_Public {
 		if ($responseCode === 200) 
 		{
 			// Add referral code to this order
-			error_log('Payment Complete - Converision Triggered - Updating PostMeta with Conversion ID');
+			//error_log('Payment Complete - Converision Triggered - Updating PostMeta with Conversion ID');
 			update_post_meta( $order->get_id(), 'rcmnd_conversion_id', $responseConversionId );
 		}
 
-		unset($_SESSION["rcmnd_cookie"]);
+		//unset($_SESSION["rcmnd_cookie"]);
+		unset($_COOKIE['rcmnd_cookie']);
 	}
 		
     }
@@ -321,17 +351,23 @@ class Rcmnd_referral_Public {
 		$cookieValueUID = '';
 		$cookieValueSSNID = '';
 		
-		if( isset ($_SESSION["rcmnd_cookie"])){
+		/*if( isset ($_SESSION["rcmnd_cookie"])){
 			$cookieValue = sanitize_text_field($_SESSION["rcmnd_cookie"]);
 		}
 
 		if( isset ($_SESSION["rcmnd_cookie_ssnid"])){
 			$cookieValueSSNID = sanitize_text_field($_SESSION["rcmnd_cookie_ssnid"]);
-		}
+		}*/
 		
-		if( isset ($_SESSION["rcmnd_cookie_uid"])){
-			$cookieValueUID = sanitize_text_field($_SESSION["rcmnd_cookie_uid"]);
+		if(isset($_COOKIE['rcmnd_cookie']))
+		{
+			$cookieValue = sanitize_text_field($_COOKIE['rcmnd_cookie']);
 		}
+		if(isset($_COOKIE['rcmnd_cookie_ssnid']))
+		{
+			$cookieValueSSNID = sanitize_text_field($_COOKIE['rcmnd_cookie_ssnid']);
+		}
+
 
 		$aso_options = get_option( 'rcmnd_aso' );
 		$opt2 = ( isset($aso_options['rcmnd_opt2'] ) ) ? sanitize_text_field($aso_options['rcmnd_opt2']) : '';
@@ -599,7 +635,7 @@ class Rcmnd_referral_Public {
 	public function set_rcmndID_cookie() {
         
         $parameterRcmndID = '';
-	$parameterSSNID = '';
+		$parameterSSNID = '';
 		        
         if (isset($_GET['RcmndRef'])){
             $parameterRcmndID = sanitize_text_field($_GET['RcmndRef']);
@@ -627,12 +663,23 @@ class Rcmnd_referral_Public {
 
         if($parameterRcmndID != '')
         {            
-            $_SESSION["rcmnd_cookie"] = sanitize_text_field($parameterRcmndID);
+            //$_SESSION["rcmnd_cookie"] = sanitize_text_field($parameterRcmndID);
+			//error_log("SETTING RCMND ref code: " . $parameterRcmndID);
+
+			/*if(!isset($_COOKIE['rcmnd_cookie'])) {
+			}*/
+			setcookie('rcmnd_cookie', $parameterRcmndID, time()+86400, "/",$_SERVER['SERVER_NAME']); 
+
         }
-		
-	if($parameterSSNID != '')
+
+		if($parameterSSNID != '')
         {            
-            $_SESSION["rcmnd_cookie_ssnid"] = sanitize_text_field($parameterSSNID);
+            //$_SESSION["rcmnd_cookie_ssnid"] = sanitize_text_field($parameterSSNID);
+			//error_log("SETTING RCMND ssnid code: " . $parameterSSNID);
+
+			setcookie('rcmnd_cookie_ssnid', $parameterSSNID, time()+86400,"/",$_SERVER['SERVER_NAME']); 
+            /*if(!isset($_COOKIE['rcmnd_cookie_ssnid'])) {
+			}*/
         }	
     }
 }
